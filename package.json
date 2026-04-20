@@ -1,0 +1,12 @@
+{
+  "name": "milkyway-terminal",
+  "version": "1.0.0",
+  "description": "Hive Milky Way Terminal — 42-agent live trading dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
