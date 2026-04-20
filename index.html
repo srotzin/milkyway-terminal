@@ -475,13 +475,17 @@ function renderSignals(){
 }
 
 // ─── Leaderboard ──────────────────────────────────────────────────────────────
+let lbFirstLoad=true;
 async function fetchLeaderboard(){
   try{
-    const r=await fetch(SWARM+'/v1/swarm/leaderboard');
+    // On first load use /snapshot which always returns rows even before trades
+    const endpoint=lbFirstLoad?'/v1/swarm/leaderboard/snapshot':'/v1/swarm/leaderboard';
+    const r=await fetch(SWARM+endpoint);
     if(!r.ok)return;
     const d=await r.json();
     const rows=d.leaderboard||[];
     if(!rows.length)return;
+    lbFirstLoad=false;
     const typeColors={ArbitrageBot:'#3b82f6',ComputeBroker:'#00ffe7',ZKTrader:'#a855f7',
       RiskHedger:'#f97316',PredictionPunter:'#00ff88',LiquidityMiner:'#f5c518',
       OracleHunter:'#ec4899',SalvageHunter:'#ef4444',LegalAgent:'#fb923c',
