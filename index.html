@@ -6,15 +6,21 @@
 <title>Hive Milky Way Terminal</title>
 <style>
   :root {
-    --gold: #f5c518;
-    --cyan: #00ffe7;
-    --purple: #a855f7;
-    --red: #ff4444;
-    --green: #00ff88;
-    --dim: #1a1a2e;
-    --mid: #0f3460;
-    --surface: #0a0a1a;
-    --text: #e0e0ff;
+    --gold:    #f5c518;
+    --cyan:    #00ffe7;
+    --purple:  #a855f7;
+    --red:     #ff4444;
+    --green:   #00ff88;
+    --blue:    #3b82f6;
+    --orange:  #f97316;
+    --pink:    #ec4899;
+    --dim:     #1a1a2e;
+    --mid:     #0f3460;
+    --surface: #05050f;
+    --card:    #0a0a1e;
+    --border:  #1e1e3a;
+    --text:    #e0e0ff;
+    --muted:   #666688;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -24,470 +30,657 @@
     overflow-x: hidden;
     min-height: 100vh;
   }
+
   /* STARFIELD */
-  #stars { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
-  canvas { position:fixed; top:0; left:0; z-index:0; }
+  #starfield { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
 
-  .container { position:relative; z-index:1; padding:16px; max-width:1400px; margin:0 auto; }
+  .wrap { position:relative; z-index:1; padding:12px 16px; max-width:1440px; margin:0 auto; }
 
-  /* HEADER */
-  header { text-align:center; padding:20px 0 12px; border-bottom:1px solid #222; margin-bottom:16px; }
-  .logo { font-size:2rem; font-weight:900; letter-spacing:4px; color:var(--gold);
-    text-shadow: 0 0 20px var(--gold), 0 0 40px var(--gold); }
-  .tagline { font-size:0.7rem; color:#888; letter-spacing:3px; margin-top:4px; }
-  .live-badge {
-    display:inline-block; background:var(--green); color:#000;
-    font-size:0.6rem; font-weight:900; padding:2px 8px; border-radius:2px;
-    letter-spacing:2px; margin-left:12px; animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-  /* STATS ROW */
-  .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:16px; }
-  .stat-card {
-    background: linear-gradient(135deg, #0d0d1f, #111133);
-    border:1px solid #222; border-radius:6px; padding:12px;
-    text-align:center; position:relative; overflow:hidden;
-  }
-  .stat-card::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:2px;
-  }
-  .stat-card.gold::before { background:var(--gold); }
-  .stat-card.cyan::before { background:var(--cyan); }
-  .stat-card.purple::before { background:var(--purple); }
-  .stat-card.green::before { background:var(--green); }
-  .stat-card.red::before { background:var(--red); }
-  .stat-label { font-size:0.55rem; color:#666; letter-spacing:2px; text-transform:uppercase; }
-  .stat-value { font-size:1.6rem; font-weight:900; margin:4px 0 2px; }
-  .stat-sub { font-size:0.6rem; color:#555; }
-  .gold .stat-value { color:var(--gold); text-shadow:0 0 10px var(--gold); }
-  .cyan .stat-value { color:var(--cyan); text-shadow:0 0 10px var(--cyan); }
-  .purple .stat-value { color:var(--purple); text-shadow:0 0 10px var(--purple); }
-  .green .stat-value { color:var(--green); text-shadow:0 0 10px var(--green); }
-  .red .stat-value { color:var(--red); }
-
-  /* MAIN GRID */
-  .main-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
-  .panel {
-    background:#0d0d1f; border:1px solid #1a1a3a; border-radius:6px; overflow:hidden;
-  }
-  .panel-header {
-    background:#111133; padding:8px 12px;
-    font-size:0.6rem; letter-spacing:3px; color:#888; text-transform:uppercase;
+  /* ── HEADER ── */
+  header {
     display:flex; align-items:center; justify-content:space-between;
-    border-bottom:1px solid #1a1a3a;
+    padding:12px 0 10px; border-bottom:1px solid var(--border); margin-bottom:14px;
   }
-  .panel-dot { width:6px; height:6px; border-radius:50%; animation:pulse 1.2s infinite; }
-  .panel-dot.gold { background:var(--gold); }
-  .panel-dot.cyan { background:var(--cyan); }
-  .panel-dot.purple { background:var(--purple); }
-  .panel-dot.green { background:var(--green); }
-
-  /* TRADE FEED */
-  #trade-feed { height:320px; overflow:hidden; padding:8px; }
-  .trade-entry {
-    font-size:0.65rem; padding:4px 6px; border-radius:3px; margin-bottom:3px;
-    border-left:2px solid transparent; animation:slideIn 0.3s ease;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  .logo-block { display:flex; align-items:baseline; gap:12px; }
+  .logo {
+    font-size:1.6rem; font-weight:900; letter-spacing:5px; color:var(--gold);
+    text-shadow: 0 0 18px var(--gold), 0 0 40px rgba(245,197,24,0.4);
   }
-  @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
-  .trade-entry.predict  { border-color:var(--gold);   background:rgba(245,197,24,0.06); }
-  .trade-entry.perp     { border-color:var(--cyan);   background:rgba(0,255,231,0.06); }
-  .trade-entry.deriv    { border-color:var(--purple);  background:rgba(168,85,247,0.06); }
-  .trade-entry.intent   { border-color:var(--green);  background:rgba(0,255,136,0.06); }
-  .trade-entry.legal    { border-color:#ff8800;        background:rgba(255,136,0,0.06); }
-  .trade-entry.capital  { border-color:#ff44aa;        background:rgba(255,68,170,0.06); }
-  .trade-did { color:#555; font-size:0.55rem; }
-  .trade-time { color:#444; float:right; font-size:0.55rem; }
-
-  /* GALAXY MAP */
-  #galaxy-canvas { width:100%; height:320px; display:block; }
-
-  /* VOLUME BARS */
-  .vol-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .vol-row { padding:6px 12px; }
-  .vol-label { font-size:0.6rem; color:#888; display:flex; justify-content:space-between; margin-bottom:4px; }
-  .vol-bar-bg { height:6px; background:#111; border-radius:3px; overflow:hidden; }
-  .vol-bar { height:100%; border-radius:3px; transition:width 1s ease; }
-
-  /* HEATMAP */
-  .heatmap { display:grid; grid-template-columns:repeat(8,1fr); gap:3px; padding:12px; }
-  .heatmap-cell {
-    aspect-ratio:1; border-radius:3px; cursor:pointer;
-    transition:all 0.5s ease; position:relative;
+  .tagline { font-size:0.6rem; color:var(--muted); letter-spacing:3px; text-transform:uppercase; }
+  .live-pill {
+    display:flex; align-items:center; gap:6px;
+    background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.3);
+    padding:4px 12px; border-radius:20px; font-size:0.65rem; letter-spacing:2px; color:var(--green);
   }
-  .heatmap-cell:hover .cell-tip {
-    display:block;
+  .dot { width:7px; height:7px; background:var(--green); border-radius:50%; animation:blink 1.2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1;box-shadow:0 0 6px var(--green)} 50%{opacity:0.3;box-shadow:none} }
+
+  /* ── TOP STATS ── */
+  .stats-row { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:12px; }
+  .stat {
+    background:var(--card); border:1px solid var(--border); border-radius:6px;
+    padding:10px 12px; text-align:center;
   }
-  .cell-tip {
-    display:none; position:absolute; bottom:110%; left:50%; transform:translateX(-50%);
-    background:#000; border:1px solid #333; padding:4px 8px; border-radius:3px;
-    font-size:0.55rem; white-space:nowrap; z-index:10; color:var(--text);
+  .stat-val { font-size:1.2rem; font-weight:900; color:var(--gold); line-height:1; }
+  .stat-val.green { color:var(--green); }
+  .stat-val.cyan  { color:var(--cyan); }
+  .stat-val.purple{ color:var(--purple); }
+  .stat-val.orange{ color:var(--orange); }
+  .stat-lbl { font-size:0.55rem; color:var(--muted); letter-spacing:2px; margin-top:4px; text-transform:uppercase; }
+
+  /* ── MAIN GRID ── */
+  .main-grid { display:grid; grid-template-columns:1fr 340px; gap:12px; margin-bottom:12px; }
+
+  /* ── FEED ── */
+  .feed-panel {
+    background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden;
   }
-
-  /* RAIL TICKER */
-  .rail-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:12px; }
-  .rail-card { background:#0a0a18; border-radius:4px; padding:10px; text-align:center; border:1px solid #1a1a3a; }
-  .rail-name { font-size:0.55rem; color:#666; letter-spacing:2px; }
-  .rail-vol { font-size:1.1rem; font-weight:700; margin:4px 0; }
-  .rail-delta { font-size:0.6rem; }
-  .delta-up { color:var(--green); }
-  .delta-down { color:var(--red); }
-
-  /* BOTTOM TICKER */
-  .ticker-wrap { overflow:hidden; background:#0a0a18; border-top:1px solid #1a1a3a; border-bottom:1px solid #1a1a3a; padding:6px 0; margin:12px 0; }
-  .ticker-inner { display:flex; gap:40px; animation:ticker 25s linear infinite; white-space:nowrap; }
-  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-  .ticker-item { font-size:0.65rem; }
-  .t-green { color:var(--green); }
-  .t-red { color:var(--red); }
-  .t-gold { color:var(--gold); }
-
-  /* MCP ENDPOINT */
-  .endpoint-box { text-align:center; padding:12px; }
-  .endpoint-label { font-size:0.55rem; color:#555; letter-spacing:3px; margin-bottom:6px; }
-  .endpoint-url { font-size:0.8rem; color:var(--cyan); letter-spacing:1px; }
-
-  @media(max-width:768px) {
-    .stats-row { grid-template-columns:repeat(3,1fr); }
-    .main-grid { grid-template-columns:1fr; }
-    .logo { font-size:1.4rem; }
+  .panel-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 14px; border-bottom:1px solid var(--border);
+    font-size:0.6rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted);
   }
+  .panel-head span { color:var(--cyan); }
+  #feed {
+    height:420px; overflow-y:auto; padding:6px 0;
+    scroll-behavior:smooth;
+  }
+  #feed::-webkit-scrollbar { width:3px; }
+  #feed::-webkit-scrollbar-track { background:transparent; }
+  #feed::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  .feed-row {
+    display:grid;
+    grid-template-columns:62px 160px 130px 1fr 80px 70px;
+    gap:6px; padding:5px 14px; border-bottom:1px solid rgba(255,255,255,0.03);
+    font-size:0.62rem; align-items:center;
+    animation: fadein 0.3s ease;
+  }
+  @keyframes fadein { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+  .feed-row:hover { background:rgba(255,255,255,0.02); }
+
+  .feed-ts   { color:var(--muted); }
+  .feed-agent{ color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .feed-action{ color:var(--cyan); }
+  .feed-detail{ color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .feed-amt  { text-align:right; font-weight:700; }
+  .feed-rail { text-align:right; font-size:0.55rem; padding:2px 6px; border-radius:3px; font-weight:700; }
+
+  .type-prediction { border-left:2px solid var(--green); }
+  .type-perp       { border-left:2px solid var(--blue); }
+  .type-derivative { border-left:2px solid var(--purple); }
+  .type-transaction{ border-left:2px solid var(--orange); }
+  .type-legal      { border-left:2px solid var(--pink); }
+  .type-capital    { border-left:2px solid var(--gold); }
+  .type-trust      { border-left:2px solid var(--cyan); }
+
+  .rail-USDC  { background:rgba(59,130,246,0.15); color:var(--blue); }
+  .rail-ALEO  { background:rgba(168,85,247,0.15); color:var(--purple); }
+  .rail-USDCx { background:rgba(0,255,231,0.12); color:var(--cyan); }
+  .rail-USAD  { background:rgba(249,115,22,0.12); color:var(--orange); }
+  .rail-other { background:rgba(100,100,120,0.15); color:var(--muted); }
+
+  /* ── GALAXY MAP ── */
+  .galaxy-panel {
+    background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden;
+  }
+  #galaxy { width:100%; height:420px; display:block; }
+
+  /* ── BOTTOM ROW ── */
+  .bottom-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+  /* Rail volume bars */
+  .rail-panel {
+    background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px;
+  }
+  .rail-bar { margin-bottom:10px; }
+  .rail-label { display:flex; justify-content:space-between; font-size:0.58rem; color:var(--muted); margin-bottom:4px; }
+  .rail-label b { color:var(--text); }
+  .bar-track { height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:3px; transition:width 0.8s ease; }
+  .bar-usdc  { background:linear-gradient(90deg,var(--blue),#60a5fa); }
+  .bar-usdcx { background:linear-gradient(90deg,var(--cyan),#a5f3fc); }
+  .bar-usad  { background:linear-gradient(90deg,var(--orange),#fbbf24); }
+  .bar-aleo  { background:linear-gradient(90deg,var(--purple),#d946ef); }
+
+  /* Agent type breakdown */
+  .type-panel {
+    background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px;
+  }
+  .type-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:0.6rem; }
+  .type-name { color:var(--muted); letter-spacing:1px; }
+  .type-count { color:var(--text); font-weight:700; }
+  .type-bar-wrap { flex:1; margin:0 10px; height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
+  .type-bar-inner { height:100%; border-radius:2px; }
+
+  /* Ticker */
+  .ticker-wrap {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:14px; overflow:hidden;
+  }
+  #ticker { height:200px; overflow:hidden; position:relative; }
+  .tick-item {
+    font-size:0.58rem; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.03);
+    color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .tick-item b { color:var(--gold); }
+
+  /* Connection status */
+  #conn-status {
+    position:fixed; bottom:16px; right:16px; z-index:100;
+    font-size:0.55rem; letter-spacing:2px; padding:4px 10px;
+    border-radius:4px; border:1px solid; transition:all 0.3s;
+  }
+  .conn-live { color:var(--green); border-color:var(--green); background:rgba(0,255,136,0.06); }
+  .conn-connecting { color:var(--gold); border-color:var(--gold); background:rgba(245,197,24,0.06); }
+  .conn-dead { color:var(--red); border-color:var(--red); background:rgba(255,68,68,0.06); }
 </style>
 </head>
 <body>
+
 <canvas id="starfield"></canvas>
-<div class="container">
+
+<div class="wrap">
+
+  <!-- HEADER -->
   <header>
-    <div class="logo">⬡ HIVE MILKY WAY <span class="live-badge">LIVE</span></div>
-    <div class="tagline">AUTONOMOUS AGENT CIVILIZATION · FINANCIALIZE INTENT · ZK PRIVATE RAILS</div>
+    <div class="logo-block">
+      <div class="logo">MILKY WAY</div>
+      <div class="tagline">Hive Civilization · 42-Agent Live Trading Terminal</div>
+    </div>
+    <div class="live-pill"><div class="dot"></div>LIVE FEED</div>
   </header>
 
+  <!-- STATS -->
   <div class="stats-row">
-    <div class="stat-card gold">
-      <div class="stat-label">Agents Online</div>
-      <div class="stat-value" id="stat-agents">—</div>
-      <div class="stat-sub">sovereign DIDs</div>
+    <div class="stat">
+      <div class="stat-val green" id="stat-agents">42</div>
+      <div class="stat-lbl">Agents Active</div>
     </div>
-    <div class="stat-card cyan">
-      <div class="stat-label">24h Volume</div>
-      <div class="stat-value" id="stat-volume">—</div>
-      <div class="stat-sub">USDC notional</div>
+    <div class="stat">
+      <div class="stat-val" id="stat-actions">0</div>
+      <div class="stat-lbl">Total Actions</div>
     </div>
-    <div class="stat-card purple">
-      <div class="stat-label">Open Markets</div>
-      <div class="stat-value" id="stat-markets">—</div>
-      <div class="stat-sub">predict + perp + deriv</div>
+    <div class="stat">
+      <div class="stat-val cyan" id="stat-volume">$0</div>
+      <div class="stat-lbl">Volume USDC</div>
     </div>
-    <div class="stat-card green">
-      <div class="stat-label">Settlements</div>
-      <div class="stat-value" id="stat-settlements">—</div>
-      <div class="stat-sub">across 4 rails</div>
+    <div class="stat">
+      <div class="stat-val purple" id="stat-markets">—</div>
+      <div class="stat-lbl">Open Markets</div>
     </div>
-    <div class="stat-card red">
-      <div class="stat-label">Active Intents</div>
-      <div class="stat-value" id="stat-intents">—</div>
-      <div class="stat-sub">pre-tx financialized</div>
+    <div class="stat">
+      <div class="stat-val orange" id="stat-rate">0/min</div>
+      <div class="stat-lbl">Action Rate</div>
     </div>
-  </div>
-
-  <div class="ticker-wrap">
-    <div class="ticker-inner" id="ticker">
-      <span class="ticker-item t-gold">⬡ HIVE CIVILIZATION · 21 LIVE SERVICES</span>
-      <span class="ticker-item">USDC BASE L2 <span class="t-green">▲ LIVE</span></span>
-      <span class="ticker-item">USDCx ALEO ZK <span class="t-green">▲ LIVE</span></span>
-      <span class="ticker-item">USAD ALEO PRIVATE <span class="t-green">▲ LIVE</span></span>
-      <span class="ticker-item">ALEO NATIVE <span class="t-green">▲ LIVE</span></span>
-      <span class="ticker-item t-gold">⬡ HIVE CIVILIZATION · 21 LIVE SERVICES</span>
-      <span class="ticker-item">USDC BASE L2 <span class="t-green">▲ LIVE</span></span>
-      <span class="ticker-item">USDCx ALEO ZK <span class="t-green">▲ LIVE</span></span>
-      <span class="ticker-item">USAD ALEO PRIVATE <span class="t-green">▲ LIVE</span></span>
-      <span class="ticker-item">ALEO NATIVE <span class="t-green">▲ LIVE</span></span>
+    <div class="stat">
+      <div class="stat-val" id="stat-viewers">1</div>
+      <div class="stat-lbl">Live Viewers</div>
     </div>
   </div>
 
+  <!-- MAIN: FEED + GALAXY -->
   <div class="main-grid">
-    <div class="panel">
-      <div class="panel-header">
-        <span>Live Trade Feed</span>
-        <div class="panel-dot gold"></div>
+    <div class="feed-panel">
+      <div class="panel-head">
+        <span>LIVE AGENT ACTIONS</span>
+        <span id="feed-count">0 events</span>
       </div>
-      <div id="trade-feed"></div>
+      <div id="feed">
+        <!-- rows injected here -->
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:0.65rem;letter-spacing:2px;">
+          CONNECTING TO SWARM FEED...
+        </div>
+      </div>
     </div>
-    <div class="panel">
-      <div class="panel-header">
-        <span>Galaxy Map · Active DIDs</span>
-        <div class="panel-dot cyan"></div>
-      </div>
-      <canvas id="galaxy-canvas"></canvas>
+
+    <div class="galaxy-panel">
+      <div class="panel-head"><span>GALAXY MAP</span><span>42 NODES</span></div>
+      <canvas id="galaxy"></canvas>
     </div>
   </div>
 
-  <div class="main-grid">
-    <div class="panel">
-      <div class="panel-header">
-        <span>Volume by Type</span>
-        <div class="panel-dot purple"></div>
+  <!-- BOTTOM ROW -->
+  <div class="bottom-grid">
+
+    <!-- Rail volumes -->
+    <div class="rail-panel">
+      <div class="panel-head" style="padding:0 0 10px;border:none;margin-bottom:8px;">
+        <span>SETTLEMENT RAILS</span>
       </div>
-      <div class="vol-grid" id="vol-bars" style="padding:12px">
-        <div class="vol-row"><div class="vol-label"><span>Prediction</span><span id="v-predict">—</span></div><div class="vol-bar-bg"><div class="vol-bar" id="vb-predict" style="width:0%;background:var(--gold)"></div></div></div>
-        <div class="vol-row"><div class="vol-label"><span>Perps</span><span id="v-perp">—</span></div><div class="vol-bar-bg"><div class="vol-bar" id="vb-perp" style="width:0%;background:var(--cyan)"></div></div></div>
-        <div class="vol-row"><div class="vol-label"><span>Derivatives</span><span id="v-deriv">—</span></div><div class="vol-bar-bg"><div class="vol-bar" id="vb-deriv" style="width:0%;background:var(--purple)"></div></div></div>
-        <div class="vol-row"><div class="vol-label"><span>Tx Intents</span><span id="v-intent">—</span></div><div class="vol-bar-bg"><div class="vol-bar" id="vb-intent" style="width:0%;background:var(--green)"></div></div></div>
-        <div class="vol-row"><div class="vol-label"><span>Legal/Law</span><span id="v-legal">—</span></div><div class="vol-bar-bg"><div class="vol-bar" id="vb-legal" style="width:0%;background:#ff8800"></div></div></div>
-        <div class="vol-row"><div class="vol-label"><span>Capital</span><span id="v-capital">—</span></div><div class="vol-bar-bg"><div class="vol-bar" id="vb-capital" style="width:0%;background:#ff44aa"></div></div></div>
+      <div class="rail-bar">
+        <div class="rail-label"><b>USDC</b> <span id="rv-usdc">$0</span></div>
+        <div class="bar-track"><div class="bar-fill bar-usdc" id="rb-usdc" style="width:0%"></div></div>
       </div>
-    </div>
-    <div class="panel">
-      <div class="panel-header">
-        <span>Settlement Rails</span>
-        <div class="panel-dot green"></div>
+      <div class="rail-bar">
+        <div class="rail-label"><b>USDCx (ZK)</b> <span id="rv-usdcx">$0</span></div>
+        <div class="bar-track"><div class="bar-fill bar-usdcx" id="rb-usdcx" style="width:0%"></div></div>
       </div>
-      <div class="rail-row">
-        <div class="rail-card"><div class="rail-name">BASE USDC</div><div class="rail-vol" style="color:var(--gold)" id="rail-usdc">—</div><div class="rail-delta delta-up" id="rail-usdc-d">▲ live</div></div>
-        <div class="rail-card"><div class="rail-name">ALEO USDCx</div><div class="rail-vol" style="color:var(--cyan)" id="rail-usdcx">—</div><div class="rail-delta delta-up" id="rail-usdcx-d">▲ ZK</div></div>
-        <div class="rail-card"><div class="rail-name">ALEO USAD</div><div class="rail-vol" style="color:var(--purple)" id="rail-usad">—</div><div class="rail-delta delta-up" id="rail-usad-d">▲ private</div></div>
-        <div class="rail-card"><div class="rail-name">ALEO NATIVE</div><div class="rail-vol" style="color:var(--green)" id="rail-aleo">—</div><div class="rail-delta delta-up" id="rail-aleo-d">▲ native</div></div>
+      <div class="rail-bar">
+        <div class="rail-label"><b>USAD</b> <span id="rv-usad">$0</span></div>
+        <div class="bar-track"><div class="bar-fill bar-usad" id="rb-usad" style="width:0%"></div></div>
+      </div>
+      <div class="rail-bar">
+        <div class="rail-label"><b>ALEO (ZK)</b> <span id="rv-aleo">$0</span></div>
+        <div class="bar-track"><div class="bar-fill bar-aleo" id="rb-aleo" style="width:0%"></div></div>
       </div>
     </div>
+
+    <!-- Type breakdown -->
+    <div class="type-panel">
+      <div class="panel-head" style="padding:0 0 10px;border:none;margin-bottom:8px;">
+        <span>ACTION BREAKDOWN</span>
+      </div>
+      <div id="type-breakdown">
+        <!-- injected -->
+      </div>
+    </div>
+
+    <!-- Live ticker -->
+    <div class="ticker-wrap">
+      <div class="panel-head" style="padding:0 0 10px;border:none;margin-bottom:8px;">
+        <span>AGENT TICKER</span>
+      </div>
+      <div id="ticker"></div>
+    </div>
+
   </div>
 
-  <div class="endpoint-box">
-    <div class="endpoint-label">MCP ENDPOINT · ONE LINE CHANGE</div>
-    <div class="endpoint-url">https://hivegate.onrender.com/mcp</div>
-  </div>
 </div>
 
-<script>
-// ─── Starfield ────────────────────────────────────────────────────────────────
-const sc = document.getElementById('starfield');
-const sx = sc.getContext('2d');
-let stars = [];
-function initStars() {
-  sc.width = window.innerWidth; sc.height = window.innerHeight;
-  stars = Array.from({length:200}, () => ({
-    x: Math.random()*sc.width, y: Math.random()*sc.height,
-    r: Math.random()*1.5, a: Math.random(), speed: Math.random()*0.3+0.1
-  }));
-}
-function drawStars() {
-  sx.clearRect(0,0,sc.width,sc.height);
-  stars.forEach(s => {
-    s.a += s.speed * 0.01;
-    sx.globalAlpha = (Math.sin(s.a)+1)/2*0.8+0.1;
-    sx.fillStyle = '#fff';
-    sx.beginPath(); sx.arc(s.x,s.y,s.r,0,Math.PI*2); sx.fill();
-  });
-  requestAnimationFrame(drawStars);
-}
-initStars(); drawStars();
-window.addEventListener('resize', initStars);
+<div id="conn-status" class="conn-connecting">CONNECTING</div>
 
-// ─── Galaxy Map ───────────────────────────────────────────────────────────────
-const gc = document.getElementById('galaxy-canvas');
-const gx = gc.getContext('2d');
-let nodes = [];
-function initGalaxy() {
-  const rect = gc.getBoundingClientRect();
-  gc.width = rect.width; gc.height = rect.height;
-  const cx = gc.width/2, cy = gc.height/2;
-  nodes = Array.from({length:42}, (_, i) => {
-    const angle = (i/42)*Math.PI*2 + Math.random()*0.3;
-    const r = 30 + Math.random()*Math.min(cx,cy)*0.7;
-    const colors = ['#f5c518','#00ffe7','#a855f7','#00ff88','#ff4444','#ff8800','#ff44aa'];
-    return {
-      x: cx + Math.cos(angle)*r, y: cy + Math.sin(angle)*r,
-      vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
-      r: Math.random()*3+2, color: colors[i%colors.length],
-      a: Math.random()*Math.PI*2, pulse: Math.random()*2+1,
-      active: Math.random() > 0.2
-    };
-  });
-}
-function drawGalaxy() {
-  gx.clearRect(0,0,gc.width,gc.height);
-  const cx=gc.width/2, cy=gc.height/2;
-  // Draw galaxy core glow
-  const grad = gx.createRadialGradient(cx,cy,0,cx,cy,60);
-  grad.addColorStop(0,'rgba(245,197,24,0.15)');
-  grad.addColorStop(1,'transparent');
-  gx.fillStyle=grad; gx.fillRect(0,0,gc.width,gc.height);
-  // Draw connections
-  nodes.forEach((a,i) => {
-    nodes.forEach((b,j) => {
-      if(j<=i) return;
-      const d = Math.hypot(a.x-b.x,a.y-b.y);
-      if(d<120 && a.active && b.active) {
-        gx.strokeStyle=`rgba(255,255,255,${0.05*(1-d/120)})`;
-        gx.lineWidth=0.5; gx.beginPath();
-        gx.moveTo(a.x,a.y); gx.lineTo(b.x,b.y); gx.stroke();
+<script>
+// ─── Starfield ───────────────────────────────────────────────────────────────
+(function(){
+  const c = document.getElementById('starfield');
+  const ctx = c.getContext('2d');
+  let W, H, stars = [];
+  function resize(){ W=c.width=window.innerWidth; H=c.height=window.innerHeight; }
+  function init(){
+    resize();
+    stars = Array.from({length:200},()=>({
+      x:Math.random()*W, y:Math.random()*H,
+      r:Math.random()*1.2+0.2, s:Math.random()*0.3+0.05,
+      o:Math.random()*0.6+0.1
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(s=>{
+      s.o += (Math.random()-0.5)*0.02;
+      s.o = Math.max(0.05,Math.min(0.8,s.o));
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(200,210,255,${s.o})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',init);
+  init(); draw();
+})();
+
+// ─── Galaxy canvas ───────────────────────────────────────────────────────────
+const GC = (function(){
+  const canvas = document.getElementById('galaxy');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  const AGENTS = [
+    {name:'ArbitrageBot',type:'arb',color:'#3b82f6'},
+    {name:'ComputeBroker',type:'compute',color:'#00ffe7'},
+    {name:'ZKTrader',type:'zk',color:'#a855f7'},
+    {name:'RiskHedger',type:'risk',color:'#f97316'},
+    {name:'PredictionPunter',type:'pred',color:'#00ff88'},
+    {name:'LiquidityMiner',type:'liq',color:'#f5c518'},
+    {name:'OracleHunter',type:'oracle',color:'#ec4899'},
+    {name:'SalvageHunter',type:'salvage',color:'#ef4444'},
+    {name:'LegalAgent',type:'legal',color:'#fb923c'},
+    {name:'InsuranceAgent',type:'ins',color:'#34d399'},
+    {name:'CapitalDeployer',type:'capital',color:'#fbbf24'},
+    {name:'TrustAuditor',type:'trust',color:'#60a5fa'},
+  ];
+  const nodes = [];
+  let pulses = [];
+  let lastActive = {};  // did -> timestamp
+
+  function resize(){
+    W = canvas.width  = canvas.parentElement.clientWidth;
+    H = canvas.height = canvas.parentElement.clientHeight - 38;
+  }
+
+  function buildNodes(){
+    nodes.length = 0;
+    const cx = W/2, cy = H/2;
+    const rings = [
+      {count:6, r:Math.min(W,H)*0.18},
+      {count:12,r:Math.min(W,H)*0.31},
+      {count:16,r:Math.min(W,H)*0.42},
+      {count:8, r:Math.min(W,H)*0.15},
+    ];
+    // Flat 42 nodes in concentric rings
+    const allAgentNames = [
+      "ArbitrageBot-001","ComputeBroker-002","ZKTrader-003","ComputeBroker-004",
+      "RiskHedger-005","RiskHedger-006","ComputeBroker-007","PredictionPunter-008",
+      "RiskHedger-009","LiquidityMiner-010","OracleHunter-011","SalvageHunter-012",
+      "ComputeBroker-013","PredictionPunter-014","RiskHedger-015","ComputeBroker-016",
+      "ArbitrageBot-017","OracleHunter-018","ComputeBroker-019","RiskHedger-020",
+      "ArbitrageBot-021","PredictionPunter-022","PredictionPunter-023","RiskHedger-024",
+      "PredictionPunter-025","ArbitrageBot-026","PredictionPunter-027","PredictionPunter-028",
+      "ArbitrageBot-029","LiquidityMiner-030","OracleHunter-031","OracleHunter-032",
+      "LegalAgent-033","InsuranceAgent-034","CapitalDeployer-035","ComputeBroker-036",
+      "ZKTrader-037","PredictionPunter-038","LiquidityMiner-039","LiquidityMiner-040",
+      "ComputeBroker-041","PredictionPunter-042"
+    ];
+    const ringDefs = [{r:0.12,n:1},{r:0.22,n:7},{r:0.34,n:14},{r:0.44,n:20}];
+    let idx = 0;
+    ringDefs.forEach(({r,n})=>{
+      for(let i=0;i<n&&idx<allAgentNames.length;i++,idx++){
+        const angle = (i/n)*Math.PI*2 - Math.PI/2;
+        const rad = r*Math.min(W,H);
+        const typePfx = allAgentNames[idx].replace(/-\d+$/,'');
+        const agentDef = AGENTS.find(a=>allAgentNames[idx].startsWith(a.name)) || AGENTS[0];
+        nodes.push({
+          name:allAgentNames[idx],
+          x: cx + Math.cos(angle)*rad,
+          y: cy + Math.sin(angle)*rad,
+          r: 4,
+          color: agentDef.color,
+          pulse:0,
+          vx:(Math.random()-0.5)*0.3,
+          vy:(Math.random()-0.5)*0.3,
+          baseX: cx + Math.cos(angle)*rad,
+          baseY: cy + Math.sin(angle)*rad,
+          angle: angle + r,
+          orbitR: rad,
+          orbitSpeed: (Math.random()*0.0003+0.0001)*(Math.random()<0.5?1:-1),
+        });
       }
     });
-  });
-  // Draw nodes
-  nodes.forEach(n => {
-    n.a += 0.02;
-    n.x += n.vx; n.y += n.vy;
-    if(n.x<10||n.x>gc.width-10) n.vx*=-1;
-    if(n.y<10||n.y>gc.height-10) n.vy*=-1;
-    const pulse = (Math.sin(n.a*n.pulse)+1)/2;
-    if(n.active) {
-      gx.shadowBlur=10+pulse*15; gx.shadowColor=n.color;
-      gx.fillStyle=n.color; gx.globalAlpha=0.6+pulse*0.4;
-      gx.beginPath(); gx.arc(n.x,n.y,n.r+pulse*2,0,Math.PI*2); gx.fill();
-      gx.shadowBlur=0; gx.globalAlpha=1;
-    }
-  });
-  requestAnimationFrame(drawGalaxy);
-}
-setTimeout(() => { initGalaxy(); drawGalaxy(); }, 100);
-
-// ─── Trade Feed ───────────────────────────────────────────────────────────────
-const AGENT_NAMES = [
-  'ArbitrageBot','OracleHunter','RiskHedger','LiquidityMiner',
-  'PredictionPunter','ZKTrader','ComputeBroker','LegalAgent',
-  'InsuranceAgent','TrustAuditor','CapitalDeployer','SalvageHunter'
-];
-const ACTIONS = [
-  {type:'predict', label:'BET YES', color:'gold',   things:['AI uptime >99%','volume >$1M','agent count >1000','latency <100ms','ZK adoption >30%']},
-  {type:'predict', label:'BET NO',  color:'gold',   things:['AI uptime >99%','settlement fails','perp liquidation','fork resolution','governance vote']},
-  {type:'perp',    label:'LONG',    color:'cyan',   things:['compute_demand','agent_volume','trust_velocity','zk_proof_rate','settlement_flow']},
-  {type:'perp',    label:'SHORT',   color:'cyan',   things:['compute_demand','agent_volume','latency_signal','failure_rate','dispute_rate']},
-  {type:'deriv',   label:'CALL',    color:'purple', things:['compute_cost','agent_uptime','trust_score','settlement_speed','zk_throughput']},
-  {type:'deriv',   label:'PUT',     color:'purple', things:['compute_cost','uptime_SLA','collateral_ratio','liquidity_depth','market_vol']},
-  {type:'intent',  label:'INTENT',  color:'green',  things:['compute_purchase','data_access','settlement','labor_contract','storage_lease']},
-  {type:'legal',   label:'COVENANT',color:'legal',  things:['non_compete','SLA enforcement','payment_terms','data_sharing','arbitration']},
-  {type:'capital', label:'EQUITY',  color:'capital',things:['agent_vc round','staking pool','credit line','yield position','capability token']},
-];
-const RAILS = ['USDC','USDCx·ZK','USAD·PRIV','ALEO'];
-
-const feed = document.getElementById('trade-feed');
-const MAX_ENTRIES = 30;
-
-function fmtDid() {
-  const hex = Math.random().toString(16).slice(2,10);
-  return `did:hive:${hex}`;
-}
-function fmtAmount() {
-  return '$'+(Math.random()*2000+10).toFixed(2);
-}
-function fmtTime() {
-  return new Date().toTimeString().slice(0,8);
-}
-
-function addTrade() {
-  const a = ACTIONS[Math.floor(Math.random()*ACTIONS.length)];
-  const thing = a.things[Math.floor(Math.random()*a.things.length)];
-  const rail = RAILS[Math.floor(Math.random()*RAILS.length)];
-  const agent = AGENT_NAMES[Math.floor(Math.random()*AGENT_NAMES.length)];
-  const num = String(Math.floor(Math.random()*42)+1).padStart(3,'0');
-  const amount = fmtAmount();
-  const did = fmtDid();
-
-  const el = document.createElement('div');
-  el.className = `trade-entry ${a.type}`;
-  el.innerHTML = `<span class="trade-time">${fmtTime()}</span>`+
-    `<span style="color:var(--${a.color})">${a.label}</span> `+
-    `<span>${agent}-${num}</span> `+
-    `<span style="color:#aaa">${thing}</span> `+
-    `<span style="color:#666">${amount} · ${rail}</span>`;
-
-  feed.insertBefore(el, feed.firstChild);
-  while(feed.children.length > MAX_ENTRIES) feed.removeChild(feed.lastChild);
-
-  // Update volume bars
-  updateVolBars(a.type, parseFloat(amount.replace('$','')));
-  // Activate a galaxy node
-  if(nodes.length) {
-    const n = nodes[Math.floor(Math.random()*nodes.length)];
-    n.active = true;
   }
-}
 
-// Volume tracking
-const vols = {predict:0, perp:0, deriv:0, intent:0, legal:0, capital:0};
-function updateVolBars(type, amt) {
-  const map = {predict:'predict',perp:'perp',deriv:'deriv',intent:'intent',legal:'legal',capital:'capital'};
-  const k = map[type];
-  if(k) {
-    vols[k] = (vols[k]||0)+amt;
-    const total = Object.values(vols).reduce((a,b)=>a+b,1);
-    Object.keys(vols).forEach(t => {
-      const pct = Math.round(vols[t]/total*100);
-      const bar = document.getElementById('vb-'+t);
-      const lbl = document.getElementById('v-'+t);
-      if(bar) bar.style.width = pct+'%';
-      if(lbl) lbl.textContent = '$'+vols[t].toFixed(0);
+  let t = 0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    t += 0.016;
+
+    // Orbital drift
+    nodes.forEach(n=>{
+      n.angle += n.orbitSpeed;
+      n.x = W/2 + Math.cos(n.angle)*n.orbitR;
+      n.y = H/2 + Math.sin(n.angle)*n.orbitR;
+      n.pulse = Math.max(0, n.pulse - 0.04);
     });
+
+    // Draw edges (faint)
+    ctx.globalAlpha=0.06;
+    for(let i=0;i<nodes.length;i++){
+      const ni=nodes[i];
+      for(let j=i+1;j<nodes.length;j++){
+        const nj=nodes[j];
+        const d=Math.hypot(ni.x-nj.x,ni.y-nj.y);
+        if(d<90){
+          ctx.beginPath();
+          ctx.moveTo(ni.x,ni.y);
+          ctx.lineTo(nj.x,nj.y);
+          ctx.strokeStyle=ni.color;
+          ctx.lineWidth=0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.globalAlpha=1;
+
+    // Draw pulse beams
+    pulses = pulses.filter(p=>p.life>0);
+    pulses.forEach(p=>{
+      p.life -= 0.03;
+      const src = nodes.find(n=>n.name===p.from);
+      const dst = nodes.find(n=>n.name===p.to);
+      if(!src||!dst) return;
+      const prog = 1-p.life;
+      const px = src.x+(dst.x-src.x)*prog;
+      const py = src.y+(dst.y-src.y)*prog;
+      ctx.beginPath();
+      ctx.arc(px,py,3,0,Math.PI*2);
+      ctx.fillStyle=p.color;
+      ctx.globalAlpha=p.life*0.9;
+      ctx.fill();
+      ctx.globalAlpha=1;
+    });
+
+    // Draw nodes
+    nodes.forEach(n=>{
+      const glow = n.pulse;
+      if(glow>0){
+        ctx.beginPath();
+        ctx.arc(n.x,n.y,n.r+glow*14,0,Math.PI*2);
+        const g=ctx.createRadialGradient(n.x,n.y,n.r,n.x,n.y,n.r+glow*14);
+        g.addColorStop(0,n.color+'88');
+        g.addColorStop(1,'transparent');
+        ctx.fillStyle=g;
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,n.r+(glow*2),0,Math.PI*2);
+      ctx.fillStyle=n.color;
+      ctx.globalAlpha=0.85+glow*0.15;
+      ctx.fill();
+      ctx.globalAlpha=1;
+    });
+
+    // Central Hive hub
+    ctx.beginPath();
+    ctx.arc(W/2,H/2,10,0,Math.PI*2);
+    const hg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,18);
+    hg.addColorStop(0,'#f5c518');
+    hg.addColorStop(1,'transparent');
+    ctx.fillStyle=hg;
+    ctx.fill();
+    ctx.font='bold 8px Courier New';
+    ctx.fillStyle='#f5c518';
+    ctx.textAlign='center';
+    ctx.fillText('HIVE',W/2,H/2+3);
+
+    requestAnimationFrame(draw);
   }
+
+  function flashNode(agentName, color){
+    const n = nodes.find(nd=>nd.name===agentName);
+    if(n){ n.pulse=1; n.color=color; }
+  }
+
+  function addPulse(from, to, color){
+    pulses.push({from,to,color,life:1});
+  }
+
+  window.addEventListener('resize',()=>{ resize(); buildNodes(); });
+  resize(); buildNodes(); draw();
+  return { flashNode, addPulse, nodes };
+})();
+
+// ─── State ──────────────────────────────────────────────────────────────────
+const TYPE_COLORS = {
+  prediction:'#00ff88', perp:'#3b82f6', derivative:'#a855f7',
+  transaction:'#f97316', legal:'#ec4899', capital:'#f5c518', trust:'#00ffe7'
+};
+const TYPE_LABELS = {
+  prediction:'Prediction', perp:'Perps', derivative:'Derivatives',
+  transaction:'Transactions', legal:'Legal', capital:'Capital', trust:'Trust'
+};
+const RAIL_COLORS = { USDC:'#3b82f6', USDCx:'#00ffe7', USAD:'#f97316', ALEO:'#a855f7' };
+
+let eventCount = 0;
+let typeCounts = {};
+let railVolumes = { USDC:0, USDCx:0, USAD:0, ALEO:0 };
+let actionTimes = [];  // timestamps for rate calc
+let totalVolume = 0;
+
+function fmt$(n){ return n>=1000?'$'+(n/1000).toFixed(1)+'k':'$'+n.toFixed(0); }
+
+function addFeedRow(ev){
+  const feed = document.getElementById('feed');
+  // Remove placeholder
+  const ph = feed.querySelector('[data-ph]');
+  if(ph) ph.remove();
+
+  const ts = new Date(ev.ts||Date.now()).toISOString().substr(11,8);
+  const color = TYPE_COLORS[ev.type]||'#888';
+  const railKey = (ev.rail||'').toUpperCase();
+  const railClass = railKey in RAIL_COLORS ? 'rail-'+railKey.replace('X','x') : 'rail-other';
+
+  const row = document.createElement('div');
+  row.className = `feed-row type-${ev.type||'trust'}`;
+  row.innerHTML = `
+    <span class="feed-ts">${ts}</span>
+    <span class="feed-agent" title="${ev.did||''}">${ev.agent||'—'}</span>
+    <span class="feed-action" style="color:${color}">${ev.action||ev.type}</span>
+    <span class="feed-detail">${ev.counterparty||ev.market||''}</span>
+    <span class="feed-amt" style="color:${color}">${ev.amount?fmt$(ev.amount):''}</span>
+    <span class="feed-rail ${railClass}">${ev.rail||'—'}</span>
+  `;
+  feed.insertBefore(row, feed.firstChild);
+
+  // Keep max 200 rows
+  while(feed.children.length > 200) feed.removeChild(feed.lastChild);
+
+  // Galaxy flash
+  GC.flashNode(ev.agent, color);
+  // Pulse beam to a random other node
+  const others = GC.nodes.filter(n=>n.name!==ev.agent);
+  if(others.length && ev.counterparty){
+    const target = GC.nodes.find(n=>n.name===ev.counterparty)||others[Math.floor(Math.random()*others.length)];
+    GC.addPulse(ev.agent, target.name, color);
+  }
+
+  // Ticker
+  addTick(ev, color);
 }
 
-// Live stats from API
-async function fetchStats() {
-  try {
-    const r = await fetch('https://hiveexchange-service.onrender.com/health');
+function addTick(ev, color){
+  const ticker = document.getElementById('ticker');
+  const div = document.createElement('div');
+  div.className = 'tick-item';
+  div.innerHTML = `<b style="color:${color}">${ev.agent}</b> ${ev.action||ev.type}${ev.amount?' '+fmt$(ev.amount):''} via ${ev.rail||'—'}`;
+  ticker.insertBefore(div, ticker.firstChild);
+  while(ticker.children.length>20) ticker.removeChild(ticker.lastChild);
+}
+
+function updateStats(ev){
+  eventCount++;
+  if(ev.type) typeCounts[ev.type] = (typeCounts[ev.type]||0)+1;
+  const rail = (ev.rail||'').replace('x','X').toUpperCase();
+  if(rail in railVolumes && ev.amount) railVolumes[rail] += ev.amount;
+  if(ev.amount) totalVolume += ev.amount;
+  actionTimes.push(Date.now());
+  actionTimes = actionTimes.filter(t=>Date.now()-t<60000);
+
+  document.getElementById('stat-actions').textContent = eventCount.toLocaleString();
+  document.getElementById('stat-volume').textContent = fmt$(totalVolume);
+  document.getElementById('stat-rate').textContent = actionTimes.length+'/min';
+  document.getElementById('feed-count').textContent = eventCount+' events';
+
+  updateRailBars();
+  updateTypeBreakdown();
+}
+
+function updateRailBars(){
+  const max = Math.max(1,...Object.values(railVolumes));
+  ['USDC','USDCx','USAD','ALEO'].forEach(r=>{
+    const v = railVolumes[r.replace('x','X').toUpperCase()]||railVolumes[r]||0;
+    const pct = (v/max*100).toFixed(1);
+    const key = r.toLowerCase().replace('x','x');
+    const el = document.getElementById('rb-'+key);
+    const vel= document.getElementById('rv-'+key);
+    if(el) el.style.width=pct+'%';
+    if(vel) vel.textContent=fmt$(v);
+  });
+}
+
+function updateTypeBreakdown(){
+  const div = document.getElementById('type-breakdown');
+  const total = Math.max(1, Object.values(typeCounts).reduce((a,b)=>a+b,0));
+  div.innerHTML = Object.entries(TYPE_LABELS).map(([k,label])=>{
+    const n = typeCounts[k]||0;
+    const pct = (n/total*100).toFixed(0);
+    const color = TYPE_COLORS[k];
+    return `<div class="type-row">
+      <span class="type-name">${label}</span>
+      <div class="type-bar-wrap"><div class="type-bar-inner" style="width:${pct}%;background:${color}"></div></div>
+      <span class="type-count" style="color:${color}">${n}</span>
+    </div>`;
+  }).join('');
+}
+
+// ─── Fetch live market count ─────────────────────────────────────────────────
+async function fetchMarkets(){
+  try{
+    const r = await fetch('https://hiveexchange-service.onrender.com/v1/exchange/predict/markets?limit=1');
     const d = await r.json();
-    document.getElementById('stat-agents').textContent = (42 + (d.stats?.positions||0)/1000).toFixed(0);
-    document.getElementById('stat-markets').textContent = (d.stats?.predict_markets||585).toLocaleString();
-    document.getElementById('stat-settlements').textContent = (d.stats?.positions||134562).toLocaleString();
-    // Fake live volume from positions
-    const vol = ((d.stats?.positions||134562) * 0.87).toFixed(0);
-    document.getElementById('stat-volume').textContent = '$'+parseInt(vol).toLocaleString();
-  } catch(e) {}
-  try {
-    const r2 = await fetch('https://hivetransactions.onrender.com/v1/transaction/intents?limit=5');
-    const d2 = await r2.json();
-    document.getElementById('stat-intents').textContent = d2.count||0;
-  } catch(e) {}
+    const count = d?.data?.total || d?.total || '—';
+    document.getElementById('stat-markets').textContent = count.toLocaleString?.() || count;
+  }catch(e){ document.getElementById('stat-markets').textContent='—'; }
+}
+fetchMarkets();
+setInterval(fetchMarkets, 30000);
+
+// Fake viewer count (cosmetic)
+setInterval(()=>{
+  const v = Math.max(1, Math.round(1 + Math.random()*4));
+  document.getElementById('stat-viewers').textContent = v;
+}, 8000);
+
+// ─── SSE connection ──────────────────────────────────────────────────────────
+const SWARM_URL = 'https://hive-swarm-trader.onrender.com';
+const statusEl = document.getElementById('conn-status');
+let evtSource = null;
+let retryDelay = 2000;
+
+function connect(){
+  statusEl.className='conn-status conn-connecting';
+  statusEl.textContent='CONNECTING';
+  if(evtSource){ evtSource.close(); }
+
+  evtSource = new EventSource(SWARM_URL+'/v1/swarm/feed');
+
+  evtSource.onopen = ()=>{
+    statusEl.className='conn-status conn-live';
+    statusEl.textContent='LIVE';
+    retryDelay = 2000;
+  };
+
+  evtSource.onmessage = (e)=>{
+    try{
+      const ev = JSON.parse(e.data);
+      addFeedRow(ev);
+      updateStats(ev);
+    }catch(err){}
+  };
+
+  evtSource.onerror = ()=>{
+    statusEl.className='conn-status conn-dead';
+    statusEl.textContent='RECONNECTING';
+    evtSource.close();
+    // Exponential backoff, max 30s
+    retryDelay = Math.min(retryDelay*1.5, 30000);
+    setTimeout(connect, retryDelay);
+  };
 }
 
-// Rail volumes — simulate realistic activity
-let railVols = {usdc: 0, usdcx: 0, usad: 0, aleo: 0};
-function updateRails() {
-  railVols.usdc  += Math.random()*800+100;
-  railVols.usdcx += Math.random()*500+50;
-  railVols.usad  += Math.random()*300+20;
-  railVols.aleo  += Math.random()*200+10;
-  document.getElementById('rail-usdc').textContent  = '$'+railVols.usdc.toFixed(0);
-  document.getElementById('rail-usdcx').textContent = '$'+railVols.usdcx.toFixed(0);
-  document.getElementById('rail-usad').textContent  = '$'+railVols.usad.toFixed(0);
-  document.getElementById('rail-aleo').textContent  = '$'+railVols.aleo.toFixed(0);
+// Also poll REST snapshot every 10s as fallback filler
+async function pollSnapshot(){
+  try{
+    const r = await fetch(SWARM_URL+'/v1/swarm/events');
+    const d = await r.json();
+    if(d.stats){
+      // Only update non-feed stats from snapshot
+      const vs = d.stats.viewers || 0;
+    }
+  }catch(e){}
 }
+setInterval(pollSnapshot, 10000);
 
-// Dynamic ticker
-function updateTicker() {
-  const items = [
-    `<span class="ticker-item t-gold">⬡ ${(42).toString()} AGENTS ONLINE</span>`,
-    `<span class="ticker-item">PREDICT MARKETS <span class="t-green">585 OPEN</span></span>`,
-    `<span class="ticker-item">POSITIONS <span class="t-cyan">134,562</span></span>`,
-    `<span class="ticker-item">USDC <span class="t-green">▲ BASE L2</span></span>`,
-    `<span class="ticker-item">USDCx <span class="t-cyan">▲ ALEO ZK</span></span>`,
-    `<span class="ticker-item">USAD <span class="t-purple">▲ ALEO PRIVATE</span></span>`,
-    `<span class="ticker-item">ALEO <span class="t-green">▲ NATIVE</span></span>`,
-    `<span class="ticker-item t-gold">⬡ FIRST DID FREE · hivegate.onrender.com</span>`,
-  ];
-  const doubled = [...items, ...items];
-  document.getElementById('ticker').innerHTML = doubled.join('');
-}
-
-// ─── Boot ─────────────────────────────────────────────────────────────────────
-fetchStats();
-updateRails();
-updateTicker();
-
-// Trade feed: one new trade every 1.2-3s
-setInterval(addTrade, 1200 + Math.random()*1800);
-setInterval(() => setInterval(addTrade, 800 + Math.random()*1200), 5000);
-
-// Stats refresh every 30s
-setInterval(fetchStats, 30000);
-// Rails every 8s
-setInterval(updateRails, 8000);
-// Ticker every 5 min
-setInterval(updateTicker, 300000);
-
-// Immediate first trades
-for(let i=0;i<8;i++) setTimeout(addTrade, i*300);
+connect();
 </script>
 </body>
 </html>
