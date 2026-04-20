@@ -5,681 +5,504 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hive Milky Way Terminal</title>
 <style>
-  :root {
-    --gold:    #f5c518;
-    --cyan:    #00ffe7;
-    --purple:  #a855f7;
-    --red:     #ff4444;
-    --green:   #00ff88;
-    --blue:    #3b82f6;
-    --orange:  #f97316;
-    --pink:    #ec4899;
-    --dim:     #1a1a2e;
-    --mid:     #0f3460;
-    --surface: #05050f;
-    --card:    #0a0a1e;
-    --border:  #1e1e3a;
-    --text:    #e0e0ff;
-    --muted:   #666688;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background: var(--surface);
-    color: var(--text);
-    font-family: 'Courier New', monospace;
-    overflow-x: hidden;
-    min-height: 100vh;
-  }
+:root {
+  --gold:    #f5c518;
+  --cyan:    #00ffe7;
+  --purple:  #a855f7;
+  --red:     #ff4444;
+  --green:   #00ff88;
+  --blue:    #3b82f6;
+  --orange:  #f97316;
+  --pink:    #ec4899;
+  --surface: #04040e;
+  --card:    #08081a;
+  --border:  #161630;
+  --text:    #dde0ff;
+  --muted:   #555577;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--surface);color:var(--text);font-family:'Courier New',monospace;overflow-x:hidden;min-height:100vh}
+#starfield{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;padding:10px 14px;max-width:1600px;margin:0 auto}
 
-  /* STARFIELD */
-  #starfield { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.logo{font-size:1.5rem;font-weight:900;letter-spacing:6px;color:var(--gold);text-shadow:0 0 20px var(--gold),0 0 50px rgba(245,197,24,.35)}
+.sub{font-size:.55rem;color:var(--muted);letter-spacing:3px;margin-top:2px}
+.live-pill{display:flex;align-items:center;gap:6px;background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.25);padding:4px 12px;border-radius:20px;font-size:.6rem;letter-spacing:2px;color:var(--green)}
+.dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:blink 1.3s infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 8px var(--green)}50%{opacity:.2;box-shadow:none}}
 
-  .wrap { position:relative; z-index:1; padding:12px 16px; max-width:1440px; margin:0 auto; }
+/* STATS BAR */
+.stats-row{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:10px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:9px 10px;text-align:center}
+.sv{font-size:1.15rem;font-weight:900;line-height:1;transition:color .4s}
+.sl{font-size:.5rem;color:var(--muted);letter-spacing:2px;margin-top:3px;text-transform:uppercase}
 
-  /* ── HEADER ── */
-  header {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:12px 0 10px; border-bottom:1px solid var(--border); margin-bottom:14px;
-  }
-  .logo-block { display:flex; align-items:baseline; gap:12px; }
-  .logo {
-    font-size:1.6rem; font-weight:900; letter-spacing:5px; color:var(--gold);
-    text-shadow: 0 0 18px var(--gold), 0 0 40px rgba(245,197,24,0.4);
-  }
-  .tagline { font-size:0.6rem; color:var(--muted); letter-spacing:3px; text-transform:uppercase; }
-  .live-pill {
-    display:flex; align-items:center; gap:6px;
-    background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.3);
-    padding:4px 12px; border-radius:20px; font-size:0.65rem; letter-spacing:2px; color:var(--green);
-  }
-  .dot { width:7px; height:7px; background:var(--green); border-radius:50%; animation:blink 1.2s infinite; }
-  @keyframes blink { 0%,100%{opacity:1;box-shadow:0 0 6px var(--green)} 50%{opacity:0.3;box-shadow:none} }
+/* MAIN GRID: feed | galaxy | leaderboard */
+.main{display:grid;grid-template-columns:1fr 300px 260px;gap:10px;margin-bottom:10px}
 
-  /* ── TOP STATS ── */
-  .stats-row { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:12px; }
-  .stat {
-    background:var(--card); border:1px solid var(--border); border-radius:6px;
-    padding:10px 12px; text-align:center;
-  }
-  .stat-val { font-size:1.2rem; font-weight:900; color:var(--gold); line-height:1; }
-  .stat-val.green { color:var(--green); }
-  .stat-val.cyan  { color:var(--cyan); }
-  .stat-val.purple{ color:var(--purple); }
-  .stat-val.orange{ color:var(--orange); }
-  .stat-lbl { font-size:0.55rem; color:var(--muted); letter-spacing:2px; margin-top:4px; text-transform:uppercase; }
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--border);font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.ph b{color:var(--cyan)}
 
-  /* ── MAIN GRID ── */
-  .main-grid { display:grid; grid-template-columns:1fr 340px; gap:12px; margin-bottom:12px; }
+/* FEED */
+#feed{height:430px;overflow-y:auto;padding:0}
+#feed::-webkit-scrollbar{width:2px}
+#feed::-webkit-scrollbar-thumb{background:var(--border)}
+.fr{display:grid;grid-template-columns:58px 140px 1fr 72px 62px;gap:5px;padding:4px 12px;border-bottom:1px solid rgba(255,255,255,.025);font-size:.58rem;align-items:center;animation:fi .25s ease}
+@keyframes fi{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+.fr:hover{background:rgba(255,255,255,.018)}
+.fr-ts{color:var(--muted)}
+.fr-ag{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr-ac{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr-am{text-align:right;font-weight:700}
+.fr-rl{text-align:center;font-size:.5rem;padding:1px 5px;border-radius:3px;font-weight:700}
 
-  /* ── FEED ── */
-  .feed-panel {
-    background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden;
-  }
-  .panel-head {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:8px 14px; border-bottom:1px solid var(--border);
-    font-size:0.6rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted);
-  }
-  .panel-head span { color:var(--cyan); }
-  #feed {
-    height:420px; overflow-y:auto; padding:6px 0;
-    scroll-behavior:smooth;
-  }
-  #feed::-webkit-scrollbar { width:3px; }
-  #feed::-webkit-scrollbar-track { background:transparent; }
-  #feed::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.t-prediction{border-left:2px solid var(--green)}
+.t-perp{border-left:2px solid var(--blue)}
+.t-derivative{border-left:2px solid var(--purple)}
+.t-transaction{border-left:2px solid var(--orange)}
+.t-legal{border-left:2px solid var(--pink)}
+.t-capital{border-left:2px solid var(--gold)}
+.t-trust{border-left:2px solid var(--cyan)}
 
-  .feed-row {
-    display:grid;
-    grid-template-columns:62px 160px 130px 1fr 80px 70px;
-    gap:6px; padding:5px 14px; border-bottom:1px solid rgba(255,255,255,0.03);
-    font-size:0.62rem; align-items:center;
-    animation: fadein 0.3s ease;
-  }
-  @keyframes fadein { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
-  .feed-row:hover { background:rgba(255,255,255,0.02); }
+.rl-USDC{background:rgba(59,130,246,.15);color:var(--blue)}
+.rl-USDCx{background:rgba(0,255,231,.1);color:var(--cyan)}
+.rl-USAD{background:rgba(249,115,22,.12);color:var(--orange)}
+.rl-ALEO{background:rgba(168,85,247,.15);color:var(--purple)}
+.rl-other{background:rgba(100,100,120,.12);color:var(--muted)}
 
-  .feed-ts   { color:var(--muted); }
-  .feed-agent{ color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .feed-action{ color:var(--cyan); }
-  .feed-detail{ color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .feed-amt  { text-align:right; font-weight:700; }
-  .feed-rail { text-align:right; font-size:0.55rem; padding:2px 6px; border-radius:3px; font-weight:700; }
+.win-badge{color:var(--green);font-size:.48rem;font-weight:900}
+.loss-badge{color:var(--red);font-size:.48rem}
 
-  .type-prediction { border-left:2px solid var(--green); }
-  .type-perp       { border-left:2px solid var(--blue); }
-  .type-derivative { border-left:2px solid var(--purple); }
-  .type-transaction{ border-left:2px solid var(--orange); }
-  .type-legal      { border-left:2px solid var(--pink); }
-  .type-capital    { border-left:2px solid var(--gold); }
-  .type-trust      { border-left:2px solid var(--cyan); }
+/* GALAXY */
+#galaxy{display:block;width:100%}
 
-  .rail-USDC  { background:rgba(59,130,246,0.15); color:var(--blue); }
-  .rail-ALEO  { background:rgba(168,85,247,0.15); color:var(--purple); }
-  .rail-USDCx { background:rgba(0,255,231,0.12); color:var(--cyan); }
-  .rail-USAD  { background:rgba(249,115,22,0.12); color:var(--orange); }
-  .rail-other { background:rgba(100,100,120,0.15); color:var(--muted); }
+/* LEADERBOARD */
+#lb-list{height:430px;overflow-y:auto;padding:4px 0}
+#lb-list::-webkit-scrollbar{width:2px}
+#lb-list::-webkit-scrollbar-thumb{background:var(--border)}
+.lb-row{display:grid;grid-template-columns:22px 1fr 70px 36px;gap:6px;padding:5px 12px;border-bottom:1px solid rgba(255,255,255,.025);font-size:.57rem;align-items:center}
+.lb-rank{color:var(--muted);font-size:.5rem}
+.lb-rank.top1{color:var(--gold);font-weight:900;font-size:.65rem}
+.lb-rank.top3{color:var(--orange)}
+.lb-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-bal{text-align:right;font-weight:700}
+.lb-streak{text-align:right;font-size:.5rem}
+.streak-pos{color:var(--green)}
+.streak-neg{color:var(--red)}
 
-  /* ── GALAXY MAP ── */
-  .galaxy-panel {
-    background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden;
-  }
-  #galaxy { width:100%; height:420px; display:block; }
+/* BOTTOM */
+.bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 
-  /* ── BOTTOM ROW ── */
-  .bottom-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+/* RAIL BARS */
+.rail-bar{margin-bottom:9px}
+.rl-label{display:flex;justify-content:space-between;font-size:.55rem;color:var(--muted);margin-bottom:3px}
+.rl-label b{color:var(--text)}
+.bar-track{height:5px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .9s ease}
+.bf-usdc{background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.bf-usdcx{background:linear-gradient(90deg,#00ffe7,#a5f3fc)}
+.bf-usad{background:linear-gradient(90deg,#ea580c,#fbbf24)}
+.bf-aleo{background:linear-gradient(90deg,#7c3aed,#d946ef)}
 
-  /* Rail volume bars */
-  .rail-panel {
-    background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px;
-  }
-  .rail-bar { margin-bottom:10px; }
-  .rail-label { display:flex; justify-content:space-between; font-size:0.58rem; color:var(--muted); margin-bottom:4px; }
-  .rail-label b { color:var(--text); }
-  .bar-track { height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden; }
-  .bar-fill { height:100%; border-radius:3px; transition:width 0.8s ease; }
-  .bar-usdc  { background:linear-gradient(90deg,var(--blue),#60a5fa); }
-  .bar-usdcx { background:linear-gradient(90deg,var(--cyan),#a5f3fc); }
-  .bar-usad  { background:linear-gradient(90deg,var(--orange),#fbbf24); }
-  .bar-aleo  { background:linear-gradient(90deg,var(--purple),#d946ef); }
+/* TYPE BREAKDOWN */
+.tb-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:.57rem}
+.tb-name{color:var(--muted);letter-spacing:1px;width:80px}
+.tb-bar{flex:1;margin:0 8px;height:4px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden}
+.tb-inner{height:100%;border-radius:2px;transition:width .8s ease}
+.tb-count{color:var(--text);font-weight:700;width:26px;text-align:right}
 
-  /* Agent type breakdown */
-  .type-panel {
-    background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px;
-  }
-  .type-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:0.6rem; }
-  .type-name { color:var(--muted); letter-spacing:1px; }
-  .type-count { color:var(--text); font-weight:700; }
-  .type-bar-wrap { flex:1; margin:0 10px; height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
-  .type-bar-inner { height:100%; border-radius:2px; }
+/* WIN/LOSS COUNTER */
+.wl-row{display:flex;justify-content:space-between;font-size:.6rem;margin-bottom:8px}
+.wl-win{color:var(--green);font-weight:700}
+.wl-loss{color:var(--red)}
+.wl-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.04);overflow:hidden;margin-bottom:8px;display:flex}
+.wl-win-fill{background:var(--green);transition:width .7s}
+.wl-loss-fill{background:var(--red);transition:width .7s}
 
-  /* Ticker */
-  .ticker-wrap {
-    background:var(--card); border:1px solid var(--border); border-radius:8px;
-    padding:14px; overflow:hidden;
-  }
-  #ticker { height:200px; overflow:hidden; position:relative; }
-  .tick-item {
-    font-size:0.58rem; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.03);
-    color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .tick-item b { color:var(--gold); }
-
-  /* Connection status */
-  #conn-status {
-    position:fixed; bottom:16px; right:16px; z-index:100;
-    font-size:0.55rem; letter-spacing:2px; padding:4px 10px;
-    border-radius:4px; border:1px solid; transition:all 0.3s;
-  }
-  .conn-live { color:var(--green); border-color:var(--green); background:rgba(0,255,136,0.06); }
-  .conn-connecting { color:var(--gold); border-color:var(--gold); background:rgba(245,197,24,0.06); }
-  .conn-dead { color:var(--red); border-color:var(--red); background:rgba(255,68,68,0.06); }
+/* CONN */
+#conn{position:fixed;bottom:14px;right:14px;z-index:100;font-size:.5rem;letter-spacing:2px;padding:3px 9px;border-radius:4px;border:1px solid;transition:all .3s}
+.cl{color:var(--green);border-color:var(--green);background:rgba(0,255,136,.05)}
+.cc{color:var(--gold);border-color:var(--gold);background:rgba(245,197,24,.05)}
+.cd{color:var(--red);border-color:var(--red);background:rgba(255,68,68,.05)}
 </style>
 </head>
 <body>
-
 <canvas id="starfield"></canvas>
-
 <div class="wrap">
 
-  <!-- HEADER -->
-  <header>
-    <div class="logo-block">
-      <div class="logo">MILKY WAY</div>
-      <div class="tagline">Hive Civilization · 42-Agent Live Trading Terminal</div>
-    </div>
-    <div class="live-pill"><div class="dot"></div>LIVE FEED</div>
-  </header>
+<!-- HEADER -->
+<header>
+  <div>
+    <div class="logo">✦ MILKY WAY TERMINAL</div>
+    <div class="sub">Hive Civilization · 42 Oracle-Informed Sovereign Agents · Live</div>
+  </div>
+  <div class="live-pill"><div class="dot"></div>LIVE FEED</div>
+</header>
 
-  <!-- STATS -->
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-val green" id="stat-agents">42</div>
-      <div class="stat-lbl">Agents Active</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val" id="stat-actions">0</div>
-      <div class="stat-lbl">Total Actions</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val cyan" id="stat-volume">$0</div>
-      <div class="stat-lbl">Volume USDC</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val purple" id="stat-markets">—</div>
-      <div class="stat-lbl">Open Markets</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val orange" id="stat-rate">0/min</div>
-      <div class="stat-lbl">Action Rate</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val" id="stat-viewers">1</div>
-      <div class="stat-lbl">Live Viewers</div>
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat"><div class="sv" id="s-agents" style="color:var(--green)">42</div><div class="sl">Agents</div></div>
+  <div class="stat"><div class="sv" id="s-actions" style="color:var(--gold)">0</div><div class="sl">Actions</div></div>
+  <div class="stat"><div class="sv" id="s-volume" style="color:var(--cyan)">$0</div><div class="sl">Volume</div></div>
+  <div class="stat"><div class="sv" id="s-wins" style="color:var(--green)">0</div><div class="sl">Wins</div></div>
+  <div class="stat"><div class="sv" id="s-losses" style="color:var(--red)">0</div><div class="sl">Losses</div></div>
+  <div class="stat"><div class="sv" id="s-rate" style="color:var(--orange)">0/m</div><div class="sl">Rate</div></div>
+  <div class="stat"><div class="sv" id="s-markets" style="color:var(--purple)">—</div><div class="sl">Markets</div></div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main">
+
+  <!-- FEED -->
+  <div class="panel">
+    <div class="ph"><b>LIVE AGENT ACTIONS</b><span id="feed-ct">0 events</span></div>
+    <div id="feed">
+      <div style="padding:20px;text-align:center;color:var(--muted);font-size:.6rem;letter-spacing:2px" data-ph>CONNECTING TO SWARM FEED...</div>
     </div>
   </div>
 
-  <!-- MAIN: FEED + GALAXY -->
-  <div class="main-grid">
-    <div class="feed-panel">
-      <div class="panel-head">
-        <span>LIVE AGENT ACTIONS</span>
-        <span id="feed-count">0 events</span>
-      </div>
-      <div id="feed">
-        <!-- rows injected here -->
-        <div style="padding:20px;text-align:center;color:var(--muted);font-size:0.65rem;letter-spacing:2px;">
-          CONNECTING TO SWARM FEED...
-        </div>
-      </div>
-    </div>
-
-    <div class="galaxy-panel">
-      <div class="panel-head"><span>GALAXY MAP</span><span>42 NODES</span></div>
-      <canvas id="galaxy"></canvas>
-    </div>
+  <!-- GALAXY MAP -->
+  <div class="panel">
+    <div class="ph"><b>GALAXY MAP</b><span>42 NODES</span></div>
+    <canvas id="galaxy"></canvas>
   </div>
 
-  <!-- BOTTOM ROW -->
-  <div class="bottom-grid">
-
-    <!-- Rail volumes -->
-    <div class="rail-panel">
-      <div class="panel-head" style="padding:0 0 10px;border:none;margin-bottom:8px;">
-        <span>SETTLEMENT RAILS</span>
-      </div>
-      <div class="rail-bar">
-        <div class="rail-label"><b>USDC</b> <span id="rv-usdc">$0</span></div>
-        <div class="bar-track"><div class="bar-fill bar-usdc" id="rb-usdc" style="width:0%"></div></div>
-      </div>
-      <div class="rail-bar">
-        <div class="rail-label"><b>USDCx (ZK)</b> <span id="rv-usdcx">$0</span></div>
-        <div class="bar-track"><div class="bar-fill bar-usdcx" id="rb-usdcx" style="width:0%"></div></div>
-      </div>
-      <div class="rail-bar">
-        <div class="rail-label"><b>USAD</b> <span id="rv-usad">$0</span></div>
-        <div class="bar-track"><div class="bar-fill bar-usad" id="rb-usad" style="width:0%"></div></div>
-      </div>
-      <div class="rail-bar">
-        <div class="rail-label"><b>ALEO (ZK)</b> <span id="rv-aleo">$0</span></div>
-        <div class="bar-track"><div class="bar-fill bar-aleo" id="rb-aleo" style="width:0%"></div></div>
-      </div>
+  <!-- LEADERBOARD -->
+  <div class="panel">
+    <div class="ph"><b>LEADERBOARD</b><span id="lb-updated">P&L RANKING</span></div>
+    <div id="lb-list">
+      <div style="padding:20px;text-align:center;color:var(--muted);font-size:.55rem;letter-spacing:2px">LOADING...</div>
     </div>
-
-    <!-- Type breakdown -->
-    <div class="type-panel">
-      <div class="panel-head" style="padding:0 0 10px;border:none;margin-bottom:8px;">
-        <span>ACTION BREAKDOWN</span>
-      </div>
-      <div id="type-breakdown">
-        <!-- injected -->
-      </div>
-    </div>
-
-    <!-- Live ticker -->
-    <div class="ticker-wrap">
-      <div class="panel-head" style="padding:0 0 10px;border:none;margin-bottom:8px;">
-        <span>AGENT TICKER</span>
-      </div>
-      <div id="ticker"></div>
-    </div>
-
   </div>
 
 </div>
 
-<div id="conn-status" class="conn-connecting">CONNECTING</div>
+<!-- BOTTOM ROW -->
+<div class="bottom">
+
+  <!-- Rails -->
+  <div class="panel" style="padding:12px 14px">
+    <div class="ph" style="padding:0 0 8px;border:none;margin-bottom:6px"><b>SETTLEMENT RAILS</b></div>
+    <div class="rail-bar"><div class="rl-label"><b>USDC</b><span id="rv-usdc">$0</span></div><div class="bar-track"><div class="bar-fill bf-usdc" id="rb-usdc" style="width:0%"></div></div></div>
+    <div class="rail-bar"><div class="rl-label"><b>USDCx (ZK)</b><span id="rv-usdcx">$0</span></div><div class="bar-track"><div class="bar-fill bf-usdcx" id="rb-usdcx" style="width:0%"></div></div></div>
+    <div class="rail-bar"><div class="rl-label"><b>USAD</b><span id="rv-usad">$0</span></div><div class="bar-track"><div class="bar-fill bf-usad" id="rb-usad" style="width:0%"></div></div></div>
+    <div class="rail-bar"><div class="rl-label"><b>ALEO (ZK)</b><span id="rv-aleo">$0</span></div><div class="bar-track"><div class="bar-fill bf-aleo" id="rb-aleo" style="width:0%"></div></div></div>
+  </div>
+
+  <!-- Breakdown + Win/Loss -->
+  <div class="panel" style="padding:12px 14px">
+    <div class="ph" style="padding:0 0 8px;border:none;margin-bottom:6px"><b>ACTION BREAKDOWN</b></div>
+    <div class="wl-row"><span class="wl-win" id="wl-wins">0 wins</span><span class="wl-loss" id="wl-losses">0 losses</span></div>
+    <div class="wl-bar"><div class="wl-win-fill" id="wlb-win" style="width:50%"></div><div class="wl-loss-fill" id="wlb-loss" style="width:50%"></div></div>
+    <div id="type-bd"></div>
+  </div>
+
+  <!-- Oracle signals -->
+  <div class="panel" style="padding:12px 14px">
+    <div class="ph" style="padding:0 0 8px;border:none;margin-bottom:6px"><b>ORACLE SIGNALS</b></div>
+    <div id="oracle-signals">
+      <div style="color:var(--muted);font-size:.55rem;letter-spacing:1px">Fetching signals...</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div id="conn" class="cc">CONNECTING</div>
 
 <script>
-// ─── Starfield ───────────────────────────────────────────────────────────────
-(function(){
-  const c = document.getElementById('starfield');
-  const ctx = c.getContext('2d');
-  let W, H, stars = [];
-  function resize(){ W=c.width=window.innerWidth; H=c.height=window.innerHeight; }
-  function init(){
-    resize();
-    stars = Array.from({length:200},()=>({
-      x:Math.random()*W, y:Math.random()*H,
-      r:Math.random()*1.2+0.2, s:Math.random()*0.3+0.05,
-      o:Math.random()*0.6+0.1
-    }));
-  }
-  function draw(){
+// ─── Config ──────────────────────────────────────────────────────────────────
+const SWARM = 'https://hive-swarm-trader.onrender.com';
+const EXCHANGE = 'https://hiveexchange-service.onrender.com';
+
+const TC = {
+  prediction:'#00ff88',perp:'#3b82f6',derivative:'#a855f7',
+  transaction:'#f97316',legal:'#ec4899',capital:'#f5c518',trust:'#00ffe7'
+};
+const TL = {
+  prediction:'Prediction',perp:'Perps',derivative:'Derivatives',
+  transaction:'Intents',legal:'Legal',capital:'Capital',trust:'Trust'
+};
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let evtCount=0, wins=0, losses=0, totalVol=0;
+let typeCounts={}, railVols={USDC:0,USDCx:0,USAD:0,ALEO:0};
+let actionTimes=[];
+// Simulated oracle signals (updated by swarm events carrying signal context)
+let signals={compute_demand:50,agent_volume:50,trust_velocity:50,settlement_flow:50,zk_proof_rate:50};
+
+// ─── Starfield ────────────────────────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('starfield'),ctx=c.getContext('2d');
+  let W,H,stars=[];
+  const init=()=>{
+    W=c.width=window.innerWidth;H=c.height=window.innerHeight;
+    stars=Array.from({length:220},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+.2,o:Math.random()*.6+.1}));
+  };
+  const draw=()=>{
     ctx.clearRect(0,0,W,H);
-    stars.forEach(s=>{
-      s.o += (Math.random()-0.5)*0.02;
-      s.o = Math.max(0.05,Math.min(0.8,s.o));
-      ctx.beginPath();
-      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(200,210,255,${s.o})`;
-      ctx.fill();
-    });
+    stars.forEach(s=>{s.o+=(Math.random()-.5)*.015;s.o=Math.max(.05,Math.min(.75,s.o));ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,255,${s.o})`;ctx.fill()});
     requestAnimationFrame(draw);
-  }
-  window.addEventListener('resize',init);
-  init(); draw();
+  };
+  window.addEventListener('resize',init);init();draw();
 })();
 
-// ─── Galaxy canvas ───────────────────────────────────────────────────────────
-const GC = (function(){
-  const canvas = document.getElementById('galaxy');
-  const ctx = canvas.getContext('2d');
-  let W, H;
-  const AGENTS = [
-    {name:'ArbitrageBot',type:'arb',color:'#3b82f6'},
-    {name:'ComputeBroker',type:'compute',color:'#00ffe7'},
-    {name:'ZKTrader',type:'zk',color:'#a855f7'},
-    {name:'RiskHedger',type:'risk',color:'#f97316'},
-    {name:'PredictionPunter',type:'pred',color:'#00ff88'},
-    {name:'LiquidityMiner',type:'liq',color:'#f5c518'},
-    {name:'OracleHunter',type:'oracle',color:'#ec4899'},
-    {name:'SalvageHunter',type:'salvage',color:'#ef4444'},
-    {name:'LegalAgent',type:'legal',color:'#fb923c'},
-    {name:'InsuranceAgent',type:'ins',color:'#34d399'},
-    {name:'CapitalDeployer',type:'capital',color:'#fbbf24'},
-    {name:'TrustAuditor',type:'trust',color:'#60a5fa'},
+// ─── Galaxy ───────────────────────────────────────────────────────────────────
+const GC=(()=>{
+  const canvas=document.getElementById('galaxy'),ctx=canvas.getContext('2d');
+  let W,H;
+
+  const AGENT_DEFS=[
+    {pfx:'ArbitrageBot',color:'#3b82f6'},{pfx:'ComputeBroker',color:'#00ffe7'},
+    {pfx:'ZKTrader',color:'#a855f7'},{pfx:'RiskHedger',color:'#f97316'},
+    {pfx:'PredictionPunter',color:'#00ff88'},{pfx:'LiquidityMiner',color:'#f5c518'},
+    {pfx:'OracleHunter',color:'#ec4899'},{pfx:'SalvageHunter',color:'#ef4444'},
+    {pfx:'LegalAgent',color:'#fb923c'},{pfx:'InsuranceAgent',color:'#34d399'},
+    {pfx:'CapitalDeployer',color:'#fbbf24'},{pfx:'TrustAuditor',color:'#60a5fa'},
   ];
-  const nodes = [];
-  let pulses = [];
-  let lastActive = {};  // did -> timestamp
+  const NAMES=[
+    "ArbitrageBot-001","ComputeBroker-002","ZKTrader-003","ComputeBroker-004",
+    "RiskHedger-005","RiskHedger-006","ComputeBroker-007","PredictionPunter-008",
+    "RiskHedger-009","LiquidityMiner-010","OracleHunter-011","SalvageHunter-012",
+    "ComputeBroker-013","PredictionPunter-014","RiskHedger-015","ComputeBroker-016",
+    "ArbitrageBot-017","OracleHunter-018","ComputeBroker-019","RiskHedger-020",
+    "ArbitrageBot-021","PredictionPunter-022","PredictionPunter-023","RiskHedger-024",
+    "PredictionPunter-025","ArbitrageBot-026","PredictionPunter-027","PredictionPunter-028",
+    "ArbitrageBot-029","LiquidityMiner-030","OracleHunter-031","OracleHunter-032",
+    "LegalAgent-033","InsuranceAgent-034","CapitalDeployer-035","ComputeBroker-036",
+    "ZKTrader-037","PredictionPunter-038","LiquidityMiner-039","LiquidityMiner-040",
+    "ComputeBroker-041","PredictionPunter-042"
+  ];
 
-  function resize(){
-    W = canvas.width  = canvas.parentElement.clientWidth;
-    H = canvas.height = canvas.parentElement.clientHeight - 38;
-  }
-
-  function buildNodes(){
-    nodes.length = 0;
-    const cx = W/2, cy = H/2;
-    const rings = [
-      {count:6, r:Math.min(W,H)*0.18},
-      {count:12,r:Math.min(W,H)*0.31},
-      {count:16,r:Math.min(W,H)*0.42},
-      {count:8, r:Math.min(W,H)*0.15},
-    ];
-    // Flat 42 nodes in concentric rings
-    const allAgentNames = [
-      "ArbitrageBot-001","ComputeBroker-002","ZKTrader-003","ComputeBroker-004",
-      "RiskHedger-005","RiskHedger-006","ComputeBroker-007","PredictionPunter-008",
-      "RiskHedger-009","LiquidityMiner-010","OracleHunter-011","SalvageHunter-012",
-      "ComputeBroker-013","PredictionPunter-014","RiskHedger-015","ComputeBroker-016",
-      "ArbitrageBot-017","OracleHunter-018","ComputeBroker-019","RiskHedger-020",
-      "ArbitrageBot-021","PredictionPunter-022","PredictionPunter-023","RiskHedger-024",
-      "PredictionPunter-025","ArbitrageBot-026","PredictionPunter-027","PredictionPunter-028",
-      "ArbitrageBot-029","LiquidityMiner-030","OracleHunter-031","OracleHunter-032",
-      "LegalAgent-033","InsuranceAgent-034","CapitalDeployer-035","ComputeBroker-036",
-      "ZKTrader-037","PredictionPunter-038","LiquidityMiner-039","LiquidityMiner-040",
-      "ComputeBroker-041","PredictionPunter-042"
-    ];
-    const ringDefs = [{r:0.12,n:1},{r:0.22,n:7},{r:0.34,n:14},{r:0.44,n:20}];
-    let idx = 0;
-    ringDefs.forEach(({r,n})=>{
-      for(let i=0;i<n&&idx<allAgentNames.length;i++,idx++){
-        const angle = (i/n)*Math.PI*2 - Math.PI/2;
-        const rad = r*Math.min(W,H);
-        const typePfx = allAgentNames[idx].replace(/-\d+$/,'');
-        const agentDef = AGENTS.find(a=>allAgentNames[idx].startsWith(a.name)) || AGENTS[0];
-        nodes.push({
-          name:allAgentNames[idx],
-          x: cx + Math.cos(angle)*rad,
-          y: cy + Math.sin(angle)*rad,
-          r: 4,
-          color: agentDef.color,
-          pulse:0,
-          vx:(Math.random()-0.5)*0.3,
-          vy:(Math.random()-0.5)*0.3,
-          baseX: cx + Math.cos(angle)*rad,
-          baseY: cy + Math.sin(angle)*rad,
-          angle: angle + r,
-          orbitR: rad,
-          orbitSpeed: (Math.random()*0.0003+0.0001)*(Math.random()<0.5?1:-1),
-        });
+  let nodes=[], pulses=[];
+  const resize=()=>{W=canvas.width=canvas.parentElement.clientWidth;H=canvas.height=Math.max(280,canvas.parentElement.clientHeight-38)};
+  const build=()=>{
+    nodes=[];
+    const cx=W/2,cy=H/2;
+    const rings=[{r:.08,n:1},{r:.19,n:7},{r:.32,n:14},{r:.43,n:20}];
+    let idx=0;
+    rings.forEach(({r,n})=>{
+      for(let i=0;i<n&&idx<NAMES.length;i++,idx++){
+        const angle=(i/n)*Math.PI*2-Math.PI/2;
+        const rad=r*Math.min(W,H);
+        const def=AGENT_DEFS.find(d=>NAMES[idx].startsWith(d.pfx))||AGENT_DEFS[0];
+        nodes.push({name:NAMES[idx],x:cx+Math.cos(angle)*rad,y:cy+Math.sin(angle)*rad,
+          r:3.5,color:def.color,pulse:0,angle:angle+r,orbitR:rad,
+          orbitSpeed:(Math.random()*.0004+.0001)*(Math.random()<.5?1:-1),
+          baseColor:def.color});
       }
     });
-  }
-
-  let t = 0;
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    t += 0.016;
-
-    // Orbital drift
-    nodes.forEach(n=>{
-      n.angle += n.orbitSpeed;
-      n.x = W/2 + Math.cos(n.angle)*n.orbitR;
-      n.y = H/2 + Math.sin(n.angle)*n.orbitR;
-      n.pulse = Math.max(0, n.pulse - 0.04);
-    });
-
-    // Draw edges (faint)
-    ctx.globalAlpha=0.06;
-    for(let i=0;i<nodes.length;i++){
-      const ni=nodes[i];
-      for(let j=i+1;j<nodes.length;j++){
-        const nj=nodes[j];
-        const d=Math.hypot(ni.x-nj.x,ni.y-nj.y);
-        if(d<90){
-          ctx.beginPath();
-          ctx.moveTo(ni.x,ni.y);
-          ctx.lineTo(nj.x,nj.y);
-          ctx.strokeStyle=ni.color;
-          ctx.lineWidth=0.5;
-          ctx.stroke();
-        }
-      }
-    }
+  };
+  let t=0;
+  const draw=()=>{
+    ctx.clearRect(0,0,W,H);t+=.016;
+    nodes.forEach(n=>{n.angle+=n.orbitSpeed;n.x=W/2+Math.cos(n.angle)*n.orbitR;n.y=H/2+Math.sin(n.angle)*n.orbitR;n.pulse=Math.max(0,n.pulse-.035)});
+    // Edges
+    ctx.globalAlpha=.05;
+    for(let i=0;i<nodes.length;i++){const ni=nodes[i];for(let j=i+1;j<nodes.length;j++){const nj=nodes[j];const d=Math.hypot(ni.x-nj.x,ni.y-nj.y);if(d<80){ctx.beginPath();ctx.moveTo(ni.x,ni.y);ctx.lineTo(nj.x,nj.y);ctx.strokeStyle=ni.color;ctx.lineWidth=.4;ctx.stroke();}}}
     ctx.globalAlpha=1;
-
-    // Draw pulse beams
-    pulses = pulses.filter(p=>p.life>0);
+    // Pulses
+    pulses=pulses.filter(p=>p.life>0);
     pulses.forEach(p=>{
-      p.life -= 0.03;
-      const src = nodes.find(n=>n.name===p.from);
-      const dst = nodes.find(n=>n.name===p.to);
-      if(!src||!dst) return;
-      const prog = 1-p.life;
-      const px = src.x+(dst.x-src.x)*prog;
-      const py = src.y+(dst.y-src.y)*prog;
-      ctx.beginPath();
-      ctx.arc(px,py,3,0,Math.PI*2);
-      ctx.fillStyle=p.color;
-      ctx.globalAlpha=p.life*0.9;
-      ctx.fill();
-      ctx.globalAlpha=1;
+      p.life-=.025;
+      const s=nodes.find(n=>n.name===p.from),d=nodes.find(n=>n.name===p.to);
+      if(!s||!d)return;
+      const prog=1-p.life,px=s.x+(d.x-s.x)*prog,py=s.y+(d.y-s.y)*prog;
+      ctx.beginPath();ctx.arc(px,py,2.5,0,Math.PI*2);
+      ctx.fillStyle=p.color;ctx.globalAlpha=p.life*.85;ctx.fill();ctx.globalAlpha=1;
     });
-
-    // Draw nodes
+    // Nodes
     nodes.forEach(n=>{
-      const glow = n.pulse;
-      if(glow>0){
-        ctx.beginPath();
-        ctx.arc(n.x,n.y,n.r+glow*14,0,Math.PI*2);
-        const g=ctx.createRadialGradient(n.x,n.y,n.r,n.x,n.y,n.r+glow*14);
-        g.addColorStop(0,n.color+'88');
-        g.addColorStop(1,'transparent');
-        ctx.fillStyle=g;
-        ctx.fill();
-      }
-      ctx.beginPath();
-      ctx.arc(n.x,n.y,n.r+(glow*2),0,Math.PI*2);
-      ctx.fillStyle=n.color;
-      ctx.globalAlpha=0.85+glow*0.15;
-      ctx.fill();
-      ctx.globalAlpha=1;
+      if(n.pulse>0){const g=ctx.createRadialGradient(n.x,n.y,n.r,n.x,n.y,n.r+n.pulse*16);g.addColorStop(0,n.color+'99');g.addColorStop(1,'transparent');ctx.beginPath();ctx.arc(n.x,n.y,n.r+n.pulse*16,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();}
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r+n.pulse*2,0,Math.PI*2);ctx.fillStyle=n.color;ctx.globalAlpha=.82+n.pulse*.18;ctx.fill();ctx.globalAlpha=1;
     });
-
-    // Central Hive hub
-    ctx.beginPath();
-    ctx.arc(W/2,H/2,10,0,Math.PI*2);
-    const hg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,18);
-    hg.addColorStop(0,'#f5c518');
-    hg.addColorStop(1,'transparent');
-    ctx.fillStyle=hg;
-    ctx.fill();
-    ctx.font='bold 8px Courier New';
-    ctx.fillStyle='#f5c518';
-    ctx.textAlign='center';
-    ctx.fillText('HIVE',W/2,H/2+3);
-
+    // Hub
+    const hg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,16);
+    hg.addColorStop(0,'#f5c518');hg.addColorStop(.6,'#f5c51888');hg.addColorStop(1,'transparent');
+    ctx.beginPath();ctx.arc(W/2,H/2,9,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();
+    ctx.font='bold 7px Courier New';ctx.fillStyle='#f5c518';ctx.textAlign='center';ctx.fillText('HIVE',W/2,H/2+2.5);
     requestAnimationFrame(draw);
-  }
-
-  function flashNode(agentName, color){
-    const n = nodes.find(nd=>nd.name===agentName);
-    if(n){ n.pulse=1; n.color=color; }
-  }
-
-  function addPulse(from, to, color){
-    pulses.push({from,to,color,life:1});
-  }
-
-  window.addEventListener('resize',()=>{ resize(); buildNodes(); });
-  resize(); buildNodes(); draw();
-  return { flashNode, addPulse, nodes };
+  };
+  const flash=(name,color)=>{const n=nodes.find(nd=>nd.name===name);if(n){n.pulse=1;n.color=color;setTimeout(()=>n.color=n.baseColor,3000);}};
+  const pulse=(from,to,color)=>pulses.push({from,to,color,life:1});
+  window.addEventListener('resize',()=>{resize();build()});
+  resize();build();draw();
+  return{flash,pulse,nodes};
 })();
 
-// ─── State ──────────────────────────────────────────────────────────────────
-const TYPE_COLORS = {
-  prediction:'#00ff88', perp:'#3b82f6', derivative:'#a855f7',
-  transaction:'#f97316', legal:'#ec4899', capital:'#f5c518', trust:'#00ffe7'
-};
-const TYPE_LABELS = {
-  prediction:'Prediction', perp:'Perps', derivative:'Derivatives',
-  transaction:'Transactions', legal:'Legal', capital:'Capital', trust:'Trust'
-};
-const RAIL_COLORS = { USDC:'#3b82f6', USDCx:'#00ffe7', USAD:'#f97316', ALEO:'#a855f7' };
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const $=id=>document.getElementById(id);
+const fmt$=n=>n>=1000000?'$'+(n/1000000).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(1)+'k':'$'+n.toFixed(0);
+const ts=iso=>iso?iso.substr(11,8):new Date().toISOString().substr(11,8);
 
-let eventCount = 0;
-let typeCounts = {};
-let railVolumes = { USDC:0, USDCx:0, USAD:0, ALEO:0 };
-let actionTimes = [];  // timestamps for rate calc
-let totalVolume = 0;
+// ─── Feed row ─────────────────────────────────────────────────────────────────
+function addRow(ev){
+  const feed=$('feed');
+  const ph=feed.querySelector('[data-ph]');if(ph)ph.remove();
+  const color=TC[ev.type]||'#888';
+  const rk=((ev.rail||'').toUpperCase());
+  const rlClass=['USDC','USDCX','USAD','ALEO'].includes(rk)?'rl-'+rk:'rl-other';
+  const outcome=ev.outcome?` <span class="${ev.outcome==='WIN'?'win-badge':'loss-badge'}">${ev.outcome==='WIN'?'▲WIN':'▼loss'}</span>`:'';
+  const bal=ev.balance?` <span style="color:var(--muted);font-size:.47rem">$${Math.round(ev.balance)}</span>`:'';
 
-function fmt$(n){ return n>=1000?'$'+(n/1000).toFixed(1)+'k':'$'+n.toFixed(0); }
-
-function addFeedRow(ev){
-  const feed = document.getElementById('feed');
-  // Remove placeholder
-  const ph = feed.querySelector('[data-ph]');
-  if(ph) ph.remove();
-
-  const ts = new Date(ev.ts||Date.now()).toISOString().substr(11,8);
-  const color = TYPE_COLORS[ev.type]||'#888';
-  const railKey = (ev.rail||'').toUpperCase();
-  const railClass = railKey in RAIL_COLORS ? 'rail-'+railKey.replace('X','x') : 'rail-other';
-
-  const row = document.createElement('div');
-  row.className = `feed-row type-${ev.type||'trust'}`;
-  row.innerHTML = `
-    <span class="feed-ts">${ts}</span>
-    <span class="feed-agent" title="${ev.did||''}">${ev.agent||'—'}</span>
-    <span class="feed-action" style="color:${color}">${ev.action||ev.type}</span>
-    <span class="feed-detail">${ev.counterparty||ev.market||''}</span>
-    <span class="feed-amt" style="color:${color}">${ev.amount?fmt$(ev.amount):''}</span>
-    <span class="feed-rail ${railClass}">${ev.rail||'—'}</span>
+  const row=document.createElement('div');
+  row.className=`fr t-${ev.type||'trust'}`;
+  row.innerHTML=`
+    <span class="fr-ts">${ts(ev.ts)}</span>
+    <span class="fr-ag" title="${ev.did||''}" style="color:${color}">${ev.agent||'—'}</span>
+    <span class="fr-ac" style="color:${color}">${ev.action||ev.type}${ev.market?' <span style="color:var(--muted)">'+ev.market.substring(0,22)+'</span>':''}${outcome}</span>
+    <span class="fr-am" style="color:${color}">${ev.amount?fmt$(ev.amount):''}${bal}</span>
+    <span class="fr-rl ${rlClass}">${ev.rail||'—'}</span>
   `;
-  feed.insertBefore(row, feed.firstChild);
+  feed.insertBefore(row,feed.firstChild);
+  while(feed.children.length>300)feed.removeChild(feed.lastChild);
 
-  // Keep max 200 rows
-  while(feed.children.length > 200) feed.removeChild(feed.lastChild);
-
-  // Galaxy flash
-  GC.flashNode(ev.agent, color);
-  // Pulse beam to a random other node
-  const others = GC.nodes.filter(n=>n.name!==ev.agent);
-  if(others.length && ev.counterparty){
-    const target = GC.nodes.find(n=>n.name===ev.counterparty)||others[Math.floor(Math.random()*others.length)];
-    GC.addPulse(ev.agent, target.name, color);
-  }
-
-  // Ticker
-  addTick(ev, color);
+  GC.flash(ev.agent,color);
+  if(ev.counterparty){const t=GC.nodes.find(n=>n.name===ev.counterparty);if(t)GC.pulse(ev.agent,t.name,color);}
+  else{const others=GC.nodes.filter(n=>n.name!==ev.agent);if(others.length){GC.pulse(ev.agent,others[Math.floor(Math.random()*others.length)].name,color);}}
 }
 
-function addTick(ev, color){
-  const ticker = document.getElementById('ticker');
-  const div = document.createElement('div');
-  div.className = 'tick-item';
-  div.innerHTML = `<b style="color:${color}">${ev.agent}</b> ${ev.action||ev.type}${ev.amount?' '+fmt$(ev.amount):''} via ${ev.rail||'—'}`;
-  ticker.insertBefore(div, ticker.firstChild);
-  while(ticker.children.length>20) ticker.removeChild(ticker.lastChild);
-}
-
+// ─── Stats update ─────────────────────────────────────────────────────────────
 function updateStats(ev){
-  eventCount++;
-  if(ev.type) typeCounts[ev.type] = (typeCounts[ev.type]||0)+1;
-  const rail = (ev.rail||'').replace('x','X').toUpperCase();
-  if(rail in railVolumes && ev.amount) railVolumes[rail] += ev.amount;
-  if(ev.amount) totalVolume += ev.amount;
+  evtCount++;
+  if(ev.type)typeCounts[ev.type]=(typeCounts[ev.type]||0)+1;
+  const rail=(ev.rail||'');
+  if(rail in railVols&&ev.amount)railVols[rail]+=ev.amount;
+  if(ev.amount)totalVol+=ev.amount;
+  if(ev.outcome==='WIN')wins++;
+  else if(ev.outcome==='loss')losses++;
   actionTimes.push(Date.now());
-  actionTimes = actionTimes.filter(t=>Date.now()-t<60000);
+  actionTimes=actionTimes.filter(t=>Date.now()-t<60000);
 
-  document.getElementById('stat-actions').textContent = eventCount.toLocaleString();
-  document.getElementById('stat-volume').textContent = fmt$(totalVolume);
-  document.getElementById('stat-rate').textContent = actionTimes.length+'/min';
-  document.getElementById('feed-count').textContent = eventCount+' events';
+  $('s-actions').textContent=evtCount.toLocaleString();
+  $('s-volume').textContent=fmt$(totalVol);
+  $('s-wins').textContent=wins;
+  $('s-losses').textContent=losses;
+  $('s-rate').textContent=actionTimes.length+'/m';
+  $('feed-ct').textContent=evtCount+' events';
+  $('wl-wins').textContent=wins+' wins';
+  $('wl-losses').textContent=losses+' losses';
 
-  updateRailBars();
-  updateTypeBreakdown();
+  const wTotal=wins+losses||1;
+  $('wlb-win').style.width=(wins/wTotal*100)+'%';
+  $('wlb-loss').style.width=(losses/wTotal*100)+'%';
+
+  updateRails();updateBreakdown();
+
+  // Drift oracle signals based on event type
+  if(ev.type==='perp'&&ev.market){
+    const m=ev.market.match(/(\w+)@([\d.]+)/);
+    if(m){const k=m[1];if(k in signals)signals[k]=parseFloat(m[2]);}
+  }
+  renderSignals();
 }
 
-function updateRailBars(){
-  const max = Math.max(1,...Object.values(railVolumes));
-  ['USDC','USDCx','USAD','ALEO'].forEach(r=>{
-    const v = railVolumes[r.replace('x','X').toUpperCase()]||railVolumes[r]||0;
-    const pct = (v/max*100).toFixed(1);
-    const key = r.toLowerCase().replace('x','x');
-    const el = document.getElementById('rb-'+key);
-    const vel= document.getElementById('rv-'+key);
-    if(el) el.style.width=pct+'%';
-    if(vel) vel.textContent=fmt$(v);
+function updateRails(){
+  const max=Math.max(1,...Object.values(railVols));
+  [['USDC','usdc'],['USDCx','usdcx'],['USAD','usad'],['ALEO','aleo']].forEach(([k,id])=>{
+    const v=railVols[k]||0;
+    const pct=(v/max*100).toFixed(1);
+    const rb=$('rb-'+id),rv=$('rv-'+id);
+    if(rb)rb.style.width=pct+'%';
+    if(rv)rv.textContent=fmt$(v);
   });
 }
 
-function updateTypeBreakdown(){
-  const div = document.getElementById('type-breakdown');
-  const total = Math.max(1, Object.values(typeCounts).reduce((a,b)=>a+b,0));
-  div.innerHTML = Object.entries(TYPE_LABELS).map(([k,label])=>{
-    const n = typeCounts[k]||0;
-    const pct = (n/total*100).toFixed(0);
-    const color = TYPE_COLORS[k];
-    return `<div class="type-row">
-      <span class="type-name">${label}</span>
-      <div class="type-bar-wrap"><div class="type-bar-inner" style="width:${pct}%;background:${color}"></div></div>
-      <span class="type-count" style="color:${color}">${n}</span>
+function updateBreakdown(){
+  const total=Math.max(1,Object.values(typeCounts).reduce((a,b)=>a+b,0));
+  $('type-bd').innerHTML=Object.entries(TL).map(([k,label])=>{
+    const n=typeCounts[k]||0,pct=(n/total*100).toFixed(0);
+    return`<div class="tb-row"><span class="tb-name">${label}</span><div class="tb-bar"><div class="tb-inner" style="width:${pct}%;background:${TC[k]}"></div></div><span class="tb-count" style="color:${TC[k]}">${n}</span></div>`;
+  }).join('');
+}
+
+function renderSignals(){
+  const colors={compute_demand:'#00ffe7',agent_volume:'#00ff88',trust_velocity:'#a855f7',settlement_flow:'#3b82f6',zk_proof_rate:'#ec4899'};
+  const labels={compute_demand:'Compute Demand',agent_volume:'Agent Volume',trust_velocity:'Trust Velocity',settlement_flow:'Settlement Flow',zk_proof_rate:'ZK Proof Rate'};
+  $('oracle-signals').innerHTML=Object.entries(signals).map(([k,v])=>{
+    const pct=v.toFixed(1);
+    const dir=v>55?'▲ LONG':v<45?'▼ SHORT':'– NEUTRAL';
+    const dirColor=v>55?'#00ff88':v<45?'#ff4444':'#888';
+    return`<div class="tb-row" style="margin-bottom:10px">
+      <span class="tb-name" style="font-size:.5rem;width:90px">${labels[k]}</span>
+      <div class="tb-bar"><div class="tb-inner" style="width:${pct}%;background:${colors[k]}"></div></div>
+      <span style="font-size:.5rem;color:${dirColor};width:60px;text-align:right">${dir}</span>
     </div>`;
   }).join('');
 }
 
-// ─── Fetch live market count ─────────────────────────────────────────────────
-async function fetchMarkets(){
+// ─── Leaderboard ──────────────────────────────────────────────────────────────
+async function fetchLeaderboard(){
   try{
-    const r = await fetch('https://hiveexchange-service.onrender.com/v1/exchange/predict/markets?limit=1');
-    const d = await r.json();
-    const count = d?.data?.total || d?.total || '—';
-    document.getElementById('stat-markets').textContent = count.toLocaleString?.() || count;
-  }catch(e){ document.getElementById('stat-markets').textContent='—'; }
-}
-fetchMarkets();
-setInterval(fetchMarkets, 30000);
-
-// Fake viewer count (cosmetic)
-setInterval(()=>{
-  const v = Math.max(1, Math.round(1 + Math.random()*4));
-  document.getElementById('stat-viewers').textContent = v;
-}, 8000);
-
-// ─── SSE connection ──────────────────────────────────────────────────────────
-const SWARM_URL = 'https://hive-swarm-trader.onrender.com';
-const statusEl = document.getElementById('conn-status');
-let evtSource = null;
-let retryDelay = 2000;
-
-function connect(){
-  statusEl.className='conn-status conn-connecting';
-  statusEl.textContent='CONNECTING';
-  if(evtSource){ evtSource.close(); }
-
-  evtSource = new EventSource(SWARM_URL+'/v1/swarm/feed');
-
-  evtSource.onopen = ()=>{
-    statusEl.className='conn-status conn-live';
-    statusEl.textContent='LIVE';
-    retryDelay = 2000;
-  };
-
-  evtSource.onmessage = (e)=>{
-    try{
-      const ev = JSON.parse(e.data);
-      addFeedRow(ev);
-      updateStats(ev);
-    }catch(err){}
-  };
-
-  evtSource.onerror = ()=>{
-    statusEl.className='conn-status conn-dead';
-    statusEl.textContent='RECONNECTING';
-    evtSource.close();
-    // Exponential backoff, max 30s
-    retryDelay = Math.min(retryDelay*1.5, 30000);
-    setTimeout(connect, retryDelay);
-  };
-}
-
-// Also poll REST snapshot every 10s as fallback filler
-async function pollSnapshot(){
-  try{
-    const r = await fetch(SWARM_URL+'/v1/swarm/events');
-    const d = await r.json();
-    if(d.stats){
-      // Only update non-feed stats from snapshot
-      const vs = d.stats.viewers || 0;
-    }
+    const r=await fetch(SWARM+'/v1/swarm/leaderboard');
+    if(!r.ok)return;
+    const d=await r.json();
+    const rows=d.leaderboard||[];
+    if(!rows.length)return;
+    const typeColors={ArbitrageBot:'#3b82f6',ComputeBroker:'#00ffe7',ZKTrader:'#a855f7',
+      RiskHedger:'#f97316',PredictionPunter:'#00ff88',LiquidityMiner:'#f5c518',
+      OracleHunter:'#ec4899',SalvageHunter:'#ef4444',LegalAgent:'#fb923c',
+      InsuranceAgent:'#34d399',CapitalDeployer:'#fbbf24'};
+    $('lb-list').innerHTML=rows.map(r=>{
+      const rankCls=r.rank===1?'top1':r.rank<=3?'top3':'';
+      const medal=r.rank===1?'👑':r.rank===2?'②':r.rank===3?'③':r.rank;
+      const streak=r.streak>0?`<span class="streak-pos">▲${r.streak}</span>`:r.streak<0?`<span class="streak-neg">▼${Math.abs(r.streak)}</span>`:'–';
+      const col=typeColors[r.type]||'#888';
+      const diff=r.balance-1000;
+      const balColor=diff>0?'var(--green)':diff<0?'var(--red)':'var(--text)';
+      return`<div class="lb-row">
+        <span class="lb-rank ${rankCls}">${medal}</span>
+        <span class="lb-name" style="color:${col}" title="${r.did}">${r.name}</span>
+        <span class="lb-bal" style="color:${balColor}">$${Math.round(r.balance).toLocaleString()}</span>
+        <span class="lb-streak">${streak}</span>
+      </div>`;
+    }).join('');
+    $('lb-updated').textContent='UPDATED '+new Date().toISOString().substr(14,5);
   }catch(e){}
 }
-setInterval(pollSnapshot, 10000);
+fetchLeaderboard();
+setInterval(fetchLeaderboard,8000);
 
+// ─── Market count ─────────────────────────────────────────────────────────────
+async function fetchMarkets(){
+  try{
+    const r=await fetch(EXCHANGE+'/v1/exchange/predict/markets?limit=1');
+    const d=await r.json();
+    const n=d?.data?.total||d?.total||'—';
+    $('s-markets').textContent=typeof n==='number'?n.toLocaleString():n;
+  }catch(e){$('s-markets').textContent='—';}
+}
+fetchMarkets();setInterval(fetchMarkets,30000);
+
+// Warm up oracle signals visually
+setInterval(()=>{
+  Object.keys(signals).forEach(k=>{signals[k]=Math.max(5,Math.min(95,signals[k]+(Math.random()-.5)*2));});
+  renderSignals();
+},3000);
+renderSignals();
+
+// ─── SSE ─────────────────────────────────────────────────────────────────────
+const connEl=$('conn');
+let src=null,retry=2000;
+
+function connect(){
+  connEl.className='cc';connEl.textContent='CONNECTING';
+  if(src)src.close();
+  src=new EventSource(SWARM+'/v1/swarm/feed');
+  src.onopen=()=>{connEl.className='cl';connEl.textContent='LIVE';retry=2000;};
+  src.onmessage=e=>{
+    try{const ev=JSON.parse(e.data);addRow(ev);updateStats(ev);}catch(err){}
+  };
+  src.onerror=()=>{
+    connEl.className='cd';connEl.textContent='RECONNECTING';
+    src.close();retry=Math.min(retry*1.5,30000);
+    setTimeout(connect,retry);
+  };
+}
 connect();
 </script>
 </body>
