@@ -145,7 +145,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 
 <!-- STATS -->
 <div class="stats-row">
-  <div class="stat"><div class="sv" id="s-agents" style="color:var(--green)">42</div><div class="sl">Agents</div></div>
+  <div class="stat"><div class="sv" id="s-agents" style="color:var(--green)">—</div><div class="sl">Active Now</div></div>
   <div class="stat"><div class="sv" id="s-actions" style="color:var(--gold)">0</div><div class="sl">Actions</div></div>
   <div class="stat"><div class="sv" id="s-volume" style="color:var(--cyan)">$0</div><div class="sl">Volume</div></div>
   <div class="stat"><div class="sv" id="s-wins" style="color:var(--green)">0</div><div class="sl">Wins</div></div>
@@ -221,7 +221,8 @@ const EXCHANGE = 'https://hiveexchange-service.onrender.com';
 
 const TC = {
   prediction:'#00ff88',perp:'#3b82f6',derivative:'#a855f7',
-  transaction:'#f97316',legal:'#ec4899',capital:'#f5c518',trust:'#00ffe7'
+  transaction:'#f97316',legal:'#ec4899',capital:'#f5c518',trust:'#00ffe7',
+  roster:'#ffffff'
 };
 const TL = {
   prediction:'Prediction',perp:'Perps',derivative:'Derivatives',
@@ -229,7 +230,7 @@ const TL = {
 };
 
 // ─── State ───────────────────────────────────────────────────────────────────
-let evtCount=0, wins=0, losses=0, totalVol=0;
+let evtCount=0, wins=0, losses=0, totalVol=0, activeAgents=42;
 let typeCounts={}, railVols={USDC:0,USDCx:0,USAD:0,ALEO:0};
 let actionTimes=[];
 // Simulated oracle signals (updated by swarm events carrying signal context)
@@ -340,14 +341,52 @@ const fmt$=n=>n>=1000000?'$'+(n/1000000).toFixed(1)+'M':n>=1000?'$'+(n/1000).toF
 const ts=iso=>iso?iso.substr(11,8):new Date().toISOString().substr(11,8);
 
 // ─── Feed row ─────────────────────────────────────────────────────────────────
+function flashCounter(newVal, oldVal){
+  const el=$('s-agents');
+  el.style.transition='none';
+  el.style.color=newVal>oldVal?'var(--green)':'var(--red)';
+  el.textContent=newVal;
+  // Animate briefly then settle
+  setTimeout(()=>{
+    el.style.transition='color 1.5s ease';
+    el.style.color='var(--green)';
+  },800);
+}
+
 function addRow(ev){
   const feed=$('feed');
   const ph=feed.querySelector('[data-ph]');if(ph)ph.remove();
+
+  // Roster events get special treatment
+  if(ev.type==='roster'){
+    const joined=ev.action==='joined';
+    const color=joined?'var(--green)':'var(--muted)';
+    const icon=joined?'▶ ONLINE':'◀ OFFLINE';
+    const prev=activeAgents;
+    activeAgents=ev.agents_active||activeAgents;
+    flashCounter(activeAgents, prev);
+
+    const row=document.createElement('div');
+    row.className='fr t-trust';
+    row.style.borderLeft=`2px solid ${joined?'#00ff88':'#555577'}`;
+    row.style.opacity=joined?'1':'.6';
+    row.innerHTML=`
+      <span class="fr-ts">${ts(ev.ts)}</span>
+      <span class="fr-ag" style="color:${color}">${ev.agent||'—'}</span>
+      <span class="fr-ac" style="color:${color}">${icon}${ev.market?' <span style="color:var(--muted);font-size:.5rem"> · '+ev.market+'</span>':''}</span>
+      <span class="fr-am" style="color:${color}">${activeAgents} active</span>
+      <span class="fr-rl rl-other">ROSTER</span>
+    `;
+    feed.insertBefore(row,feed.firstChild);
+    while(feed.children.length>300)feed.removeChild(feed.lastChild);
+    return;
+  }
+
   const color=TC[ev.type]||'#888';
   const rk=((ev.rail||'').toUpperCase());
   const rlClass=['USDC','USDCX','USAD','ALEO'].includes(rk)?'rl-'+rk:'rl-other';
   const outcome=ev.outcome?` <span class="${ev.outcome==='WIN'?'win-badge':'loss-badge'}">${ev.outcome==='WIN'?'▲WIN':'▼loss'}</span>`:'';
-  const bal=ev.balance?` <span style="color:var(--muted);font-size:.47rem">$${Math.round(ev.balance)}</span>`:'';
+  const bal=ev.balance?` <span style="color:var(--muted);font-size:.47rem">$${Math.round(ev.balance)}</span>`:''; 
 
   const row=document.createElement('div');
   row.className=`fr t-${ev.type||'trust'}`;
