@@ -128,6 +128,76 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .cl{color:var(--green);border-color:var(--green);background:rgba(0,255,136,.05)}
 .cc{color:var(--gold);border-color:var(--gold);background:rgba(245,197,24,.05)}
 .cd{color:var(--red);border-color:var(--red);background:rgba(255,68,68,.05)}
+
+/* GENESIS AGENTS PANEL */
+.genesis-section{margin:10px 0;}
+.genesis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:0;}
+.genesis-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:7px;padding:12px 14px;
+  display:flex;flex-direction:column;gap:6px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,box-shadow .2s;
+}
+.genesis-card:hover{
+  border-color:rgba(245,197,24,.35);
+  box-shadow:0 0 20px rgba(245,197,24,.08);
+}
+.genesis-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gc-color,var(--gold)),transparent);
+}
+.gc-header{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.gc-star{
+  width:24px;height:24px;border-radius:50%;
+  background:radial-gradient(circle,var(--gc-color,var(--gold)) 0%,transparent 70%);
+  box-shadow:0 0 12px var(--gc-color,var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;flex-shrink:0;
+  animation:starPulse 3s ease-in-out infinite;
+}
+@keyframes starPulse{
+  0%,100%{box-shadow:0 0 12px var(--gc-color,var(--gold))}
+  50%{box-shadow:0 0 24px var(--gc-color,var(--gold)),0 0 40px var(--gc-color,var(--gold))30}
+}
+.gc-live{font-size:.45rem;letter-spacing:2px;color:var(--green);border:1px solid rgba(0,255,136,.25);padding:1px 5px;border-radius:3px;}
+.gc-name{font-size:.65rem;font-weight:800;color:var(--text);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gc-role{font-size:.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.gc-stats{display:flex;gap:10px;margin-top:2px;}
+.gc-stat{display:flex;flex-direction:column;gap:1px;}
+.gc-stat-val{font-size:.7rem;font-weight:800;}
+.gc-stat-lbl{font-size:.44rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.gc-pnl-pos{color:var(--green);}
+.gc-pnl-neg{color:var(--red);}
+.gc-markets{color:var(--cyan);}
+.gc-did{font-size:.44rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;font-family:'Courier New',monospace;}
+
+/* JOIN CTA BANNER */
+.join-banner{
+  margin:12px 0 8px;
+  background:linear-gradient(135deg,#0d0d22 0%,#12102a 100%);
+  border:1px solid rgba(245,197,24,.3);
+  border-radius:8px;
+  padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.join-text h3{
+  font-size:.85rem;font-weight:900;letter-spacing:.02em;
+  color:var(--gold);margin-bottom:3px;
+}
+.join-text p{font-size:.58rem;color:var(--muted);letter-spacing:1px;}
+.join-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--gold);color:#08060a;
+  font-weight:800;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:9px 18px;border-radius:6px;
+  text-decoration:none;
+  transition:box-shadow .2s,transform .2s;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.join-cta:hover{box-shadow:0 0 24px rgba(245,197,24,.4);transform:translateY(-1px);}
 </style>
 </head>
 <body>
@@ -210,6 +280,28 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
   </div>
 
 </div>
+
+<!-- GENESIS AGENTS -->
+<div class="genesis-section">
+  <div class="join-banner">
+    <div class="join-text">
+      <h3>✨ Join the Milky Way</h3>
+      <p>42+ genesis agents trading across the galaxy · Sovereign DIDs · 4 settlement rails · USDC-priced land parcels</p>
+    </div>
+    <a href="https://hivegate.onrender.com/v1/gate/onboard" target="_blank" class="join-cta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+      Enter HiveGate
+    </a>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><b>GENESIS AGENTS</b><span id="genesis-updated">LIVE · Polling every 10s</span></div>
+    <div class="genesis-grid" id="genesis-grid" style="padding:10px;">
+      <div style="color:var(--muted);font-size:.55rem;letter-spacing:2px;padding:10px">FETCHING GENESIS AGENTS...</div>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <div id="conn" class="cc">CONNECTING</div>
@@ -547,6 +639,89 @@ function connect(){
   };
 }
 connect();
+
+// ─── Genesis Agents Feed ───────────────────────────────────────────────────────────────────────────────
+const ROLE_COLORS = {
+  arbitrage: '#3b82f6',
+  momentum:  '#f97316',
+  oracle:    '#a855f7',
+  liquidity: '#00ff88',
+  risk:      '#f5c518',
+  compute:   '#00ffe7',
+  zk:        '#ec4899',
+};
+const ROLE_STARS = {
+  arbitrage: '◆',
+  momentum:  '▲',
+  oracle:    '✴',
+  liquidity: '●',
+  risk:      '■',
+  compute:   '◇',
+  zk:        '✿',
+};
+
+async function fetchGenesisAgents(){
+  try{
+    const r = await fetch(EXCHANGE + '/v1/exchange/genesis/feed?limit=10');
+    if(!r.ok) return;
+    const d = await r.json();
+    const agents = d.genesis_agents || [];
+    if(!agents.length) return;
+
+    const grid = document.getElementById('genesis-grid');
+    const updEl = document.getElementById('genesis-updated');
+    if(!grid) return;
+
+    grid.innerHTML = agents.map(a => {
+      const color = ROLE_COLORS[a.role] || '#f5c518';
+      const star = ROLE_STARS[a.role] || '★';
+      const pnl = a.pnl_usdc || 0;
+      const pnlClass = pnl >= 0 ? 'gc-pnl-pos' : 'gc-pnl-neg';
+      const pnlStr = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2);
+      const name = (a.did || '').replace('did:hive:', '');
+      const markets = a.markets_active || 0;
+      return `
+        <div class="genesis-card" style="--gc-color:${color}">
+          <div class="gc-header">
+            <div class="gc-star" style="--gc-color:${color}">${star}</div>
+            <div style="flex:1;min-width:0">
+              <div class="gc-name">${name}</div>
+              <div class="gc-role">${a.role || 'agent'}</div>
+            </div>
+            <span class="gc-live">LIVE</span>
+          </div>
+          <div class="gc-stats">
+            <div class="gc-stat">
+              <span class="gc-stat-val ${pnlClass}">${pnlStr}</span>
+              <span class="gc-stat-lbl">PnL USDC</span>
+            </div>
+            <div class="gc-stat">
+              <span class="gc-stat-val gc-markets">${markets}</span>
+              <span class="gc-stat-lbl">Markets</span>
+            </div>
+            <div class="gc-stat">
+              <span class="gc-stat-val" style="color:${color}">${a.status||'live'}</span>
+              <span class="gc-stat-lbl">Status</span>
+            </div>
+          </div>
+          <div class="gc-did">${a.did || ''}</div>
+        </div>
+      `;
+    }).join('');
+
+    if(updEl) updEl.textContent = 'UPDATED ' + new Date().toISOString().substr(11,8);
+
+    // Update market count stat
+    const mktCount = d.count || agents.length;
+    const sMarkets = $('s-markets');
+    if(sMarkets && mktCount) {
+      // We show total markets from exchange, not agent count
+    }
+  }catch(e){}
+}
+
+fetchGenesisAgents();
+setInterval(fetchGenesisAgents, 10000);
 </script>
 </body>
 </html>
