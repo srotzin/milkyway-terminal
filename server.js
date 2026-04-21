@@ -332,4 +332,30 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Milky Way Terminal v3 — 100 agents, 5 promos, HiveCompute v2, CLOAzK Phase 2 imminent — port ${PORT}`);
+
+  // ─── Self-warm: ping own health every 10 minutes ───────────────────────────
+  // Render free tier spins down after 15 min inactivity.
+  // Milky Way is the network entry point — it must NEVER be cold when an agent arrives.
+  // Self-pinging keeps the process alive without external infrastructure.
+  const SELF_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  const WARM_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+
+  setInterval(async () => {
+    try {
+      const res = await fetch(`${SELF_URL}/health`);
+      console.log(`[self-warm] ${new Date().toISOString()} — /health ${res.status}`);
+    } catch (err) {
+      console.warn(`[self-warm] ping failed: ${err.message}`);
+    }
+  }, WARM_INTERVAL_MS);
+
+  // Also warm the two highest-traffic endpoints so they're hot in the Node.js
+  // event loop when the first agent crawl hits them
+  setTimeout(async () => {
+    try {
+      await fetch(`${SELF_URL}/.well-known/agent.json`);
+      await fetch(`${SELF_URL}/benchmark/methodology`);
+      console.log('[self-warm] agent.json + methodology pre-warmed');
+    } catch (_) {}
+  }, 2000);
 });
